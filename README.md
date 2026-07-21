@@ -66,8 +66,6 @@ The global average and CLS tokens aka the learned representations from the trans
 **Backward Pass**: The loss is then backpropagated through the network to calculate the gradients of the loss function with respect to the weights and biases. 
 **Weight Update**: The computed gradients from the backward pass are then used to update the network's parameters using the optimization algorithm Adam:
 
-\( \theta_t = \theta_{t-1} - \eta \cdot \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon} \), where \( \hat{m}_t \) and \( \hat{v}_t \) are bias-corrected estimates of the first and second moments of the gradients
-
 ### Evaluation
 As *Validation* matrices, accuracy, the amount of correctly classified samples, and Cohen's kappa are used. Cohen's kappa is especially useful for scenarios with imbalanced data distributions (Liao et al., 2025). To compare the classification results for my model to other state-of-the-art models, confusion matrices have been computed ()
 
