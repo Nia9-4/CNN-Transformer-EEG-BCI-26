@@ -18,6 +18,11 @@ EEG data is usually highly variable, non-stationary, typically scarce, and has a
 ## Project
 The project aims to build on Ma et al. (2022) and Liao et al. (2025), but inspiration from further recent scientific papers and publications has been drawn to improve the model's accuracy as well.
 
+### The Dataset
+The EEG Motor Movement/Imagery Dataset by Schalk (2009) is one of the standard BCI datasets besides the BCI Competition IV 2a dataset. The dataset contains a set of 64-channel EEGs from participants performing motor/imagery tasks. Since the python MNE library for EEG preprocessing provides access to it, it is very comfortable for application.
+
+Schalk, G. (2009). EEG Motor Movement/Imagery Dataset (version 1.0.0). PhysioNet. RRID:SCR_007345. https://doi.org/10.13026/C28G6P - documentation: https://physionet.org/content/eegmmidb/1.0.0/
+
 ### The Architecture
 1. EEG Data
 2. Preprocessing
@@ -43,6 +48,7 @@ To work with the raw EEG data, it should be transformed into a more suitable for
 It is important to notice that preprocessing is **only applied to the training dataset**!
 
 ![EEG Processing Overview](preprocessing.png)
+
 _image adapted from Lotte (2014)_
 
 Kavira & Vinjamuri (2025) have also highlighted the importance of advanced preprocessing of EEG data. Therefore, in this project band-pass filtering using ICA decomposition and feature extraction via PSD have been implemented. For the coding and actual application, the MNE python library (https://mne.tools/dev/auto_tutorials/intro/10_overview.html) has been used.
