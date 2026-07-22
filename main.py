@@ -1,3 +1,5 @@
+import warnings
+
 from src.model import CNN
 from src.dataset import create_dataloaders
 from src.train import train_model
