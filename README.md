@@ -41,7 +41,7 @@ _The knowledge of the following passage is based on the "Introduction to EEG-pre
 
 To work with the raw EEG data, it should be transformed into a more suitable format via preprocessing. During the procedure, one can already perform filtering or artifact removal, and normalization might help achieve a better comparability of EEG signals, which can be helpful when the EEG is measured in different subjects with different baselines. As previously highlighted, EEG data is quite noisy and signals from the scalp are not necessarily accurately representing signals coming from the brain. Even eye blinks, muscle movements and other neural activity might distort the EEG signal, contaminating the data. Therefore preprocessing can help get closer to the "true" neural signal, before actually letting the CNN discover local and the Transformer global dependencies. Some preprocessing measures include:
 * band-pass filtering
-* notch filtering (50/60 Hz)
+* notch filtering (60 Hz)
 * artifact removal (ICA, etc.)
 * normalization
 
