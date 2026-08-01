@@ -53,7 +53,11 @@ _image adapted from Lotte (2014)_
 
 Kavira & Vinjamuri (2025) have also highlighted the importance of advanced preprocessing of EEG data. Therefore, in this project band-pass filtering using ICA decomposition and feature extraction via PSD have been implemented. For the coding and actual application, the MNE python library (https://mne.tools/dev/auto_tutorials/intro/10_overview.html) has been used.
 
-#### The Convolutional Layers
+#### The VAE and the CNN part of it
+Instead of using an MLP-Encoder in the VAE, a CNN is used, from which the mean and standard deviation can then get determined, used to sample a latent representation. To complete the architecture, the decoder is composed of Convolutional transpose layers so that local temporal and spatial EEG features can be learned.
+
+
+(!! not used anymore !!)
 The Convolutional Layers can be split into a temporal and a spatial CNN, with the temporal detecting local rhythms and waveforms (kernel moved across time) and the spatial detecting channel interactions (kernel is moving across electrodes). In the *CNN* a dropout ratio of 0.3 and weight decay of 0.5 are used, to prevent overfitting (inspired by Liao et al. (2025)).
 
 #### Before Input can pass on to the Transformer ...
@@ -68,6 +72,14 @@ The *Transformer* is built on an attention layer and feed-forward network, follo
 The global average and CLS tokens aka the learned representations from the transformer finally need to get mapped to the available classes, so that finally, one label can be predicted as the output. This is done by a final multilayer perceptron (MLP) classifier.
 
 ### Training
+Instead of training the full Transformer-architecture on the EEG data directly, a compact latent representation is learned in a VAE encoder-decoder architecture that is trained end-to-end first. The decoder component of that architecture is then ignored and for the further use, only the encoder part will be used to produce the latent compressions fed into the Transformer, which can then be trained on the embeddings of the VAE. This idea is inspired by Wolff (2025) and also through a personal conversation with the author. ChatGPT has been used for further questions. To not continuously require the Encoder model nor the raw data for the sampling of the latent representation z, previously calculated embeddings are saved as a memmap in DuckDB (also inspired by Wolff (2025)). DuckDB enables working very easily with the stored data embeddings instead of the raw data without having to work with indices. For higher efficiency, Memmap (.npy file) can be used for the embeddings for each label to avoid too many SQL-queries and enable direct array access instead.
+
+The training is therefore split into two phases:
+
+* Phase 1: EEG data -> CNN Encoder -> mu, sigma -> sampling to get latent 128-d vector representation z -> CNN Decoder -> EEG data reconstruction
+_now the decoder part gets ignored_
+* Phase 2: Input -> CNN Encoder (freeze) -> mu -> PosE -> Transformer -> pred
+
 **Forward Pass**: The input is first passed throug the CNN, then Transformer and finally classified. One can then compute the loss, which I do using the categorical cross entropy with label smoothing (again inspired by Liao et al. (2025)). 
 **Backward Pass**: The loss is then backpropagated through the network to calculate the gradients of the loss function with respect to the weights and biases. 
 **Weight Update**: The computed gradients from the backward pass are then used to update the network's parameters using the optimization algorithm Adam:
@@ -89,5 +101,6 @@ Nice extensions for this project could be using a Temporal Convolutional Network
 * Liao, W., Liu, H. & Wang, W. (2025). Advancing BCI with a transformer-based model for motor imagery classification. Sci Rep 15, 23380. https://doi.org/10.1038/s41598-025-06364-4. - the code is available here: https://github.com/BlackCattt9/EEGEncoder
 * Lotte, F. (2014). A Tutorial on EEG Signal Processing Techniques for Mental State Recognition in Brain-Computer Interfaces. Eduardo Reck Miranda; Julien Castet. Guide to Brain-Computer Music Interfacing, Springer, 2014. ⟨hal-01055103⟩. https://inria.hal.science/hal-01055103v1/document.
 * Ma, Y., Song, Y. & Gao, F. (2022). A novel hybrid CNN-Transformer model for EEG Motor Imagery classification. International Joint Conference on Neural Networks (IJCNN), Padua, Italy, 2022, 1-8. https://doi.org/10.1109/IJCNN55064.2022.9892821.
+* Wolff, C. (2025). Efficient Data Loading for Meta In-Context Learning using DuckDB (unpublished). 
 * Yuce, A. B., & Stober, S. (2026). Benchmarking Positional Encoding Strategies for Transformer-Based EEG Foundation Models [Arxiv Preprint].     
 https://doi.org/10.48550/arXiv.2605.29754.

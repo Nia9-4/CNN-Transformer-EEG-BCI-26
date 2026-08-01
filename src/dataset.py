@@ -110,7 +110,7 @@ stc = mne.minimum_norm.apply_inverse(?, inv_operator, lambda2=lambda2, method="M
 
 
 
-# rewrite everything into an EEG dataset class for importability?
+"""# rewrite everything into an EEG dataset class for importability?
 class PreprocessedEEGDataset(Dataset):
 
     def __init__(self, files, labels, window_size=1000):
@@ -121,3 +121,4 @@ class PreprocessedEEGDataset(Dataset):
     def __len__(self):
         return len(self.files)
     
+"""
