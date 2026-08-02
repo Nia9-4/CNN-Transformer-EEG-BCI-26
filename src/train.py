@@ -6,16 +6,15 @@ import torch.utils.data as Dataset, DataLoader
 from model import CNN
 from dataset import PreprocessedDataset
 
-dataset = PreprocessedDataset(#X_train_csp, y_train)
+
+dataset = PreprocessedDataset(# X_train, y_train)
 
 model = CNNTransformer()
 
-optimizer = optim.Adam(
-    model.parameters(),
-    lr=0.001
-)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 dataloader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4)
+
 
 # Training loop
 
