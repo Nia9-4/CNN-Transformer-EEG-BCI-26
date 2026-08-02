@@ -11,8 +11,11 @@ import warnings
 
 matplotlib.rcParams['figure.figsize'] = (5, 5)
 
+
 """A plotted analysis of the dataset can be found in a separate
 Jupyter notebook in the folder 'notebooks'"""
+
+
 
 class PreprocessedDataset(Dataset):
     def __init__(self, dataset_path, subject_ids=None, preload=True, filter_freqs=(1.0, 50.0), baseline=None):
@@ -43,6 +46,28 @@ class PreprocessedDataset(Dataset):
                                 tmin=tmin, tmax=tmax, baseline=baseline, preload=self.preload)
             self.epochs_list.append(epochs)
 
+    def load_and_preprocess(self):
+        # Load data for each subject and run
+        all_X_train = []
+        all_Y_train = []
+
+        for subject in subjects:
+            for run in runs:
+                X_train, y_train = load_data(subject=subject, runs=[run])
+
+                # Reshape data to fit MNE conventions
+                n_samples = X_train.shape[0]
+                n_channels = X_train.shape[1]
+                X_train = np.reshape(X_train, (n_samples, n_channels, -1))
+                all_X_train.append(X_train)
+                all_y_train.append(y_train)
+
+        # Concat all data and labels
+        X_train_all = np.concatenate(all_X_train, axis=0)
+        y_train_all = np.concatenate(all_y_train, axis=0)
+
+        """more needs to be added here"""
+    
     def __len__(self):
         return sum(len(epochs) for epochs in self.epochs_list)
 

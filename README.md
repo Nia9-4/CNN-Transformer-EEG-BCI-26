@@ -47,7 +47,7 @@ For the coding and actual application, the MNE python library (https://mne.tools
 It is important to notice that preprocessing is **only applied to the training dataset**! (see below an exemplary BCI signal processing pipeline)
 
 ![EEG Processing Overview](preprocessing.png)
-_image adapted from Lotte (2014)_
+_Image adapted from Lotte (2014)_
 
 #### The VAE and the CNN part of it
 Instead of using an MLP-Encoder in the VAE, a CNN is used, from which the mean and standard deviation can then get determined, used to sample a latent representation. To complete the architecture, the decoder is composed of Convolutional transpose layers so that local temporal and spatial EEG features can be learned.
