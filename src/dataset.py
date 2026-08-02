@@ -1,124 +1,71 @@
 import numpy as np
-import warnings
 import matplotlib
-import matplotlib.pyplot as plt
-import torch # necessary?
 import mne 
 from mne.io import concatenate_raws, read_raw_edf
 from mne.datasets import eegbci
 from mne.preprocessing import ICA
 from torch.utils.data import Dataset
+import warnings
+
 %matplotlib notebook
 
 matplotlib.rcParams['figure.figsize'] = (5, 5)
 
-# working with EEGBCI dataset from PhysioNet 
-# 64-channel EEG
-subjects = [1] # adjust if needed
-runs = [4, 8, 12] # adjust if needed
-raw_fnames = eegbci.load_data(subjects, runs)
-raws = [read_raw_edf(f, preload=True) for f in raw_fnames]
-raws.info['chs']
+"""A plotted analysis of the dataset can be found in a separate
+Jupyter notebook in the folder 'notebooks'"""
 
-# concatenate runs from subject
-raw = concatenate_raws(raws)
-# set channel names
-eegbci.standardize(raw)
+class PreprocessedDataset(Dataset):
+    def __init__(self, dataset_path, subject_ids=None, preload=True, filter_freqs=(1.0, 50.0), baseline=None):
+        self.dataset_path = dataset_path
+        self.subject_ids = subject_ids if subject_ids else range(1, 109) # all subjects
+        self.preload = preload
+        self.filter_freqs = filter_freqs
+        self.baseline = baseline
+        self.epochs_list = []
 
-# set montage
-montage = mne.channels.make_standard_montage('standard_1020')
-raw.set_montage(montage) # what is a montage?
-raw.plot_sensors(kind='3d')
+        # Loading the raw data by finding -raw.fif files for each subject's directory
+        for subject_id in self.subject_ids:
+            raw_fif, events, _ = eegbci.load_data(subject_id, runs=self.runs)
+            raw_fif.set_montage(mne.channels.make_standard_montage('standard_1020'))
 
-# overview over dataset
-print(raw)
-print(raw.info)
+            # Apply bandpass filter
+            raw_fif.filter(l_freq=self.filter_freqs[0], h_freq=self.filter_freqs[1])
 
-# power spectral density (PSD) for each sensor type
-raw.compute_psd(fmax=80).plot(picks="data", exclude="bads", amplitude=False)
-raw.plot(duration=5, n_channels=30)
+            # Apply ICA to remove artifacts
+            ica = ICA(num_components=20, random_state=97)
+            ica.fit(raw_fif)
+            ica.apply(raw_fif)
 
-# Filtering
-# remove 60 Hz power line noise using notch filter
-raw.notch_filter(60)
-
-# remove very high and very low frequencies
-raw.filter(l_freq=1.0, h_freq=50.0) # only keeping 1-50Hz
-raw.info['sfreq']
-
-# Downsample data
-raw.resample(120, npaud='auto')
-raw.plot_psd(tmin=0, tmax=60, fmin=2, fmax=60, average=False, spatial_colors=True, xscale='log')
-
-# look at raw data to look for bad channels
-raw.plot(scalings = dict(eeg=200e-6))
-
-# remove channels like C4 which look noisier
-raw.info['bads'] = ['C4']
-picks = mne.pick_types(raw.info, exclude='bads')
-raw.plot(scalings=dict(eeg=200e-6), bad_color='red')
-
-# interpolate data coming from bad channel via spherical spline interpolation
-raw.interpolate_bads(reset_bads=True)
-raw.plot(scalings=dict(eeg=200e-6))
-
-# set up, fit ICA & localize the signal
-# play around with num_components to get the ones that represent actual brain activity
-num_components = 20
-ica = ICA(n_components=num_components, random_state=97, max_iter=800)
-ica.fit(raw)
-
-# plot ICA on scalp
-ica.plot_components()
-
-# visualize each component's properties to reject artifactual comp
-raw.plot(n_channels=32, scalings=dict(eeg=100e-6))
-
-# heuristic: looking at spectrum of each component
-ica.plot_properties(raw, picks=0) # exact comp num will prolly not work
-ica.plot_properties(raw, picks=9) # outliers might have increasing intensity for higher freq
-
-# look at data with bad component removed
-ica.plot_overlay(raw, exclude=[0])
-ica.exclude = [0]
-ica.apply(raw)
-raw.plot(scalings=dict(eeg=200e-6))
-
-
-
-# include here detecting experimental events, epoching
-
-
-
-# time-frequency analysis
-frequencies = np.arange(7, 30, 3)
-power = aud_epochs.compute_tfr(
-    "morelt", n_cycles=2, return_itc=False, freqs=frequencies, decim=3, average=True
-)
-power.plot(["EEG001"]) # check what to input here
-
-# inverse modeling - projecting data into subject's source space
-# minimum-norm estimation (MNE)
-inverse_operator_file = (?) # get eegbci .fif file inv
-inv_operator = mne.minimum_norm.read_inverse_operator(inverse_operator_file)
-# set signal-to-noise ratio (SNR) ro compute regularization params
-snr = 3.0
-lambda2 = 1.0 / snr**2
-# generate source time course (STC)
-stc = mne.minimum_norm.apply_inverse(?, inv_operator, lambda2=lambda2, method="MNE") # apply beamforming?
-
-
-
-
-"""# rewrite everything into an EEG dataset class for importability?
-class PreprocessedEEGDataset(Dataset):
-
-    def __init__(self, files, labels, window_size=1000):
-        self.files = files
-        self.labels = labels
-        self.window_size = window_size
+            # Epoching
+            tmin, tmax = -1.0, 4.0
+            baseline = self.baseline
+            epochs = mne.Epochs(raw_fif, events=events, event_id=dict(left_hand=1, right_hand=2), 
+                                tmin=tmin, tmax=tmax, baseline=baseline, preload=self.preload)
+            self.epochs_list.append(epochs)
 
     def __len__(self):
-        return len(self.files)
-    
-"""
+        return sum(len(epochs) for epochs in self.epochs_list)
+
+    # Provide minimal info for DataLoader
+    def __getitem__(self, idx):
+        total_len = 0
+        for i, epochs in enumerate(self.epochs_list):
+            if idx >= total_len and idx < total_len + len(epochs):
+                epoch_idx = idx - total_len
+                data = epochs.get_data()[epoch_idx]
+                label = epochs.events[epoch_idx][2] - 1
+                return data, label
+            total_len += len(epochs)
+        raise IndexError(f'Index {idx} is out of bounds')
+
+    # Fct for plotting PSDs quickly etc. (may be delayed later)
+    def get_epoch(self, idx):
+        """Retrieve specific epoch and its label"""
+        total_len = 0
+        for i, epochs in enumerate(self.epochs_list):
+            if idx >= total_len and idx < total_len + len(epochs):
+                epoch_idx = idx - total_len
+                return self.epochs_list[i][epoch_idx]
+            total_len += len(epochs)
+        raise IndexError(f'Index {idx} is out of bounds')
+

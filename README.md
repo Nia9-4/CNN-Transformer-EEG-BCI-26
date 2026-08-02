@@ -41,14 +41,14 @@ _The knowledge of the following passage is based on the "Introduction to EEG-pre
 
 To work with the raw EEG data, it should be transformed into a more suitable format via preprocessing. During the procedure, one can already perform filtering or artifact removal, and normalization might help achieve a better comparability of EEG signals, which can be helpful when the EEG is measured in different subjects with different baselines. As previously highlighted, EEG data is quite noisy and signals from the scalp are not necessarily accurately representing signals coming from the brain. Even eye blinks, muscle movements and other neural activity might distort the EEG signal, contaminating the data. Therefore preprocessing can help get closer to the "true" neural signal, before actually letting the CNN discover local and the Transformer global dependencies. Some preprocessing measures include:
 * band-pass filtering
-* notch filtering (60 Hz)
-* artifact removal (ICA, etc.)
+* artifact removal via ICA
 * normalization
 
 It is important to notice that preprocessing is **only applied to the training dataset**!
 
-![EEG Processing Overview](preprocessing.png)
+The code in the dataset.py file has been partially inspired from the MNE Python library and Silvera (2022).
 
+![EEG Processing Overview](preprocessing.png)
 _image adapted from Lotte (2014)_
 
 Kavira & Vinjamuri (2025) have also highlighted the importance of advanced preprocessing of EEG data. Therefore, in this project band-pass filtering using ICA decomposition and feature extraction via PSD have been implemented. For the coding and actual application, the MNE python library (https://mne.tools/dev/auto_tutorials/intro/10_overview.html) has been used.
@@ -101,6 +101,7 @@ Nice extensions for this project could be using a Temporal Convolutional Network
 * Liao, W., Liu, H. & Wang, W. (2025). Advancing BCI with a transformer-based model for motor imagery classification. Sci Rep 15, 23380. https://doi.org/10.1038/s41598-025-06364-4. - the code is available here: https://github.com/BlackCattt9/EEGEncoder
 * Lotte, F. (2014). A Tutorial on EEG Signal Processing Techniques for Mental State Recognition in Brain-Computer Interfaces. Eduardo Reck Miranda; Julien Castet. Guide to Brain-Computer Music Interfacing, Springer, 2014. ⟨hal-01055103⟩. https://inria.hal.science/hal-01055103v1/document.
 * Ma, Y., Song, Y. & Gao, F. (2022). A novel hybrid CNN-Transformer model for EEG Motor Imagery classification. International Joint Conference on Neural Networks (IJCNN), Padua, Italy, 2022, 1-8. https://doi.org/10.1109/IJCNN55064.2022.9892821.
+* Silvera, D. G. (2022). Brain-Computer Interfaces (BCIs) for Motor Imagery Classification. https://github.com/DavidSilveraGabriel/EEG-classification/tree/master. 
 * Wolff, C. (2025). Efficient Data Loading for Meta In-Context Learning using DuckDB (unpublished). 
 * Yuce, A. B., & Stober, S. (2026). Benchmarking Positional Encoding Strategies for Transformer-Based EEG Foundation Models [Arxiv Preprint].     
 https://doi.org/10.48550/arXiv.2605.29754.
