@@ -19,9 +19,7 @@ EEG data is usually highly variable, non-stationary, typically scarce, and has a
 The project aims to build on Ma et al. (2022) and Liao et al. (2025), but inspiration from further recent scientific papers and publications has been drawn to improve the model's accuracy as well.
 
 ### The Dataset
-The EEG Motor Movement/Imagery Dataset by Schalk (2009) is one of the standard BCI datasets besides the BCI Competition IV 2a dataset. The dataset contains a set of 64-channel EEGs from participants performing motor/imagery tasks. Since the python MNE library for EEG preprocessing provides access to it, it is very comfortable for application.
-
-Schalk, G. (2009). EEG Motor Movement/Imagery Dataset (version 1.0.0). PhysioNet. RRID:SCR_007345. https://doi.org/10.13026/C28G6P - documentation: https://physionet.org/content/eegmmidb/1.0.0/
+The EEG Motor Movement/Imagery Dataset by Schalk (2009) is one of the standard BCI datasets commonly used in the field, besides the BCI Competition IV 2a dataset. The dataset contains a set of 64-channel EEGs from participants performing motor/imagery tasks. Since the python MNE library for EEG preprocessing provides access to it, it is very comfortable for application. Further descriptions and plots about the dataset can be found in 'notebooks/datapreprocessing.ipynb'.
 
 ### The Architecture
 1. EEG Data
@@ -39,19 +37,17 @@ Schalk, G. (2009). EEG Motor Movement/Imagery Dataset (version 1.0.0). PhysioNet
 #### Preprocessing
 _The knowledge of the following passage is based on the "Introduction to EEG-preprocessing" chapter in the section "Data analyses" in the book by Herholz et al. (2020)_
 
-To work with the raw EEG data, it should be transformed into a more suitable format via preprocessing. During the procedure, one can already perform filtering or artifact removal, and normalization might help achieve a better comparability of EEG signals, which can be helpful when the EEG is measured in different subjects with different baselines. As previously highlighted, EEG data is quite noisy and signals from the scalp are not necessarily accurately representing signals coming from the brain. Even eye blinks, muscle movements and other neural activity might distort the EEG signal, contaminating the data. Therefore preprocessing can help get closer to the "true" neural signal, before actually letting the CNN discover local and the Transformer global dependencies. Some preprocessing measures include:
+To work with the raw EEG data, it should be transformed into a more suitable format via preprocessing. During the procedure, one can already perform filtering or artifact removal, and normalization might help achieve a better comparability of EEG signals, which can be helpful when the EEG is measured in different subjects with different baselines. As previously highlighted, EEG data is quite noisy and signals from the scalp are not necessarily accurately representing signals coming from the brain. Even eye blinks, muscle movements and other neural activity might distort the EEG signal, contaminating the data as highlighted by Kavira & Vinjamuri (2025) among others. Therefore preprocessing can help get closer to the "true" neural signal, before actually letting the CNN discover local and the Transformer global dependencies. Some preprocessing measures implemented in this project include:
 * band-pass filtering
 * artifact removal via ICA
 * normalization
 
-It is important to notice that preprocessing is **only applied to the training dataset**!
+For the coding and actual application, the MNE python library (https://mne.tools/dev/auto_tutorials/intro/10_overview.html) has been used and inspiration drawn from Silvera (2022).
 
-The code in the dataset.py file has been partially inspired from the MNE Python library and Silvera (2022).
+It is important to notice that preprocessing is **only applied to the training dataset**! (see below an exemplary BCI signal processing pipeline)
 
 ![EEG Processing Overview](preprocessing.png)
 _image adapted from Lotte (2014)_
-
-Kavira & Vinjamuri (2025) have also highlighted the importance of advanced preprocessing of EEG data. Therefore, in this project band-pass filtering using ICA decomposition and feature extraction via PSD have been implemented. For the coding and actual application, the MNE python library (https://mne.tools/dev/auto_tutorials/intro/10_overview.html) has been used.
 
 #### The VAE and the CNN part of it
 Instead of using an MLP-Encoder in the VAE, a CNN is used, from which the mean and standard deviation can then get determined, used to sample a latent representation. To complete the architecture, the decoder is composed of Convolutional transpose layers so that local temporal and spatial EEG features can be learned.
@@ -101,6 +97,7 @@ Nice extensions for this project could be using a Temporal Convolutional Network
 * Liao, W., Liu, H. & Wang, W. (2025). Advancing BCI with a transformer-based model for motor imagery classification. Sci Rep 15, 23380. https://doi.org/10.1038/s41598-025-06364-4. - the code is available here: https://github.com/BlackCattt9/EEGEncoder
 * Lotte, F. (2014). A Tutorial on EEG Signal Processing Techniques for Mental State Recognition in Brain-Computer Interfaces. Eduardo Reck Miranda; Julien Castet. Guide to Brain-Computer Music Interfacing, Springer, 2014. ⟨hal-01055103⟩. https://inria.hal.science/hal-01055103v1/document.
 * Ma, Y., Song, Y. & Gao, F. (2022). A novel hybrid CNN-Transformer model for EEG Motor Imagery classification. International Joint Conference on Neural Networks (IJCNN), Padua, Italy, 2022, 1-8. https://doi.org/10.1109/IJCNN55064.2022.9892821.
+* Schalk, G. (2009). EEG Motor Movement/Imagery Dataset (version 1.0.0). PhysioNet. RRID:SCR_007345. https://doi.org/10.13026/C28G6P - documentation: https://physionet.org/content/eegmmidb/1.0.0/
 * Silvera, D. G. (2022). Brain-Computer Interfaces (BCIs) for Motor Imagery Classification. https://github.com/DavidSilveraGabriel/EEG-classification/tree/master. 
 * Wolff, C. (2025). Efficient Data Loading for Meta In-Context Learning using DuckDB (unpublished). 
 * Yuce, A. B., & Stober, S. (2026). Benchmarking Positional Encoding Strategies for Transformer-Based EEG Foundation Models [Arxiv Preprint].     
