@@ -4,28 +4,28 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as Dataset, DataLoader
 from model import CNN
-from dataset import PreprocessedDataset
+from dataset import PreprocessedDataset, load_and_preprocess
+from datamodule import create_dataloaders
 
+preprocessor = PreprocessedDataset()
+X, y = preprocessor.load_and_preprocess()
 
-dataset = PreprocessedDataset(# X_train, y_train)
-
-model = CNNTransformer()
+# model = CNNTransformer()
 
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-dataloader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4)
-
+train_loader, test_loader = create_dataloaders(X, y)
 
 # Training loop
 
-n = 8 # number of epochs
+num_epochs = 8 # number of epochs
 
-for epoch in range(n):
+for epoch in range(num_epochs):
     for batch in dataloader:
-        inputs, labels = batch['data'], batch['labels']
-        optimizer.zero_grad()
-        pred = model(x)
-        loss = nn.CrossEntropyLoss(pred, x)
-        loss.backward()
+        #train(model, train_loader)
+        #optimizer.zero_grad()
+        #pred = model(x)
+        #loss = nn.CrossEntropyLoss(pred, x)
+        #loss.backward()
         optimizer.step()
     print(loss.item())

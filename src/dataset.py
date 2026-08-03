@@ -26,47 +26,46 @@ class PreprocessedDataset(Dataset):
         self.baseline = baseline
         self.epochs_list = []
 
+    def load_and_preprocess(self)
         # Loading the raw data by finding -raw.fif files for each subject's directory
+        X_subjects = []
+        y_subjects = []
+
         for subject_id in self.subject_ids:
-            raw_fif, events, _ = eegbci.load_data(subject_id, runs=self.runs)
-            raw_fif.set_montage(mne.channels.make_standard_montage('standard_1020'))
+            raw, events, _ = eegbci.load_data(subject_id, runs=self.runs)
+            raw.set_montage(mne.channels.make_standard_montage('standard_1020'))
 
             # Apply bandpass filter
-            raw_fif.filter(l_freq=self.filter_freqs[0], h_freq=self.filter_freqs[1])
+            raw.filter(l_freq=self.filter_freqs[0], h_freq=self.filter_freqs[1])
 
             # Apply ICA to remove artifacts
             ica = ICA(num_components=20, random_state=97)
-            ica.fit(raw_fif)
-            ica.apply(raw_fif)
+            ica.fit(raw)
+            ica.apply(raw)
 
             # Epoching
-            tmin, tmax = -1.0, 4.0
-            baseline = self.baseline
-            epochs = mne.Epochs(raw_fif, events=events, event_id=dict(left_hand=1, right_hand=2), 
-                                tmin=tmin, tmax=tmax, baseline=baseline, preload=self.preload)
+            event_id = {"left": 2, "right": 3}
+            epochs = mne.Epochs(raw, events=events, event_id=event_id, 
+                                tmin=0, tmax=4, baseline=self.baseline, preload=self.preload)
             self.epochs_list.append(epochs)
 
-    def load_and_preprocess(self):
-        # Load data for each subject and run
-        all_X_train = []
-        all_Y_train = []
+            X_subjects.append(epochs.get_data)
+            y_subjects.append(epochs.events[:, 2]) 
+            # third column in MNE is event_id since second column is filled with 0 and first is the sample
 
-        for subject in subjects:
-            for run in runs:
-                X_train, y_train = load_data(subject=subject, runs=[run])
+        X = np.concatenate(X_subjects, axis=0)
+        y = np.concatenate(y_subjects, axis=0)
 
-                # Reshape data to fit MNE conventions
-                n_samples = X_train.shape[0]
-                n_channels = X_train.shape[1]
-                X_train = np.reshape(X_train, (n_samples, n_channels, -1))
-                all_X_train.append(X_train)
-                all_y_train.append(y_train)
+        # raw event IDs do not start at 0 which PyTorch classification losses expect
+        label_map = {
+            2: 0,
+            3: 1
+        }
 
-        # Concat all data and labels
-        X_train_all = np.concatenate(all_X_train, axis=0)
-        y_train_all = np.concatenate(all_y_train, axis=0)
+        # T1 = 0 and T2 = 1
+        y = np.array([label_map[label] for label in epochs.events[:, -1]])
 
-        """more needs to be added here"""
+        return X, y
     
     def __len__(self):
         return sum(len(epochs) for epochs in self.epochs_list)
@@ -77,7 +76,8 @@ class PreprocessedDataset(Dataset):
         for i, epochs in enumerate(self.epochs_list):
             if idx >= total_len and idx < total_len + len(epochs):
                 epoch_idx = idx - total_len
-                data = epochs.get_data()[epoch_idx]
+                self.data = [epochs.get_data() for epochs in self.epochs_list]
+                data = self.data[i][epoch_idx]
                 label = epochs.events[epoch_idx][2] - 1
                 return data, label
             total_len += len(epochs)
