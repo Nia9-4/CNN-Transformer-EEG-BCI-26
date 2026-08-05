@@ -3,6 +3,33 @@ import torch
 import torch.nn as nn
 import math
 
+class BaselineMLP(nn.Module):
+    def __init__(self, input_size, output_size=1) -> None:
+            self.layer_1 = torch.nn.Linear(input_size, 2 * input_size)
+            self.layer_2 = torch.nn.Linear(input_size * 2, input_size * 2)
+            self.layer_3 = torch.nn.Linear(input_size * 2, input_size)
+            self.layer_4 = torch.nn.Linear(input_size, int(input_size) / 4)
+            self.layer_out = torch.nn.Linear(int(input_size)/4, output_size)
+            self.dropout = torch.nn.Dropout(0.3)
+            self.relu = torch.nn.Sigmoid()
+    
+    def forward(self, x):
+        x = self.relu(self.layer_1(x))
+        x = self.dropout(x)
+        x = self.relu(self.layer_2(x))
+        x = self.dropout(x)
+        x = self.relu(self.layer_3(x))
+        x = self.dropout(x)
+        x = self.relu(self.layer_4(x))
+        x = self.dropout(x)
+        x = self.layer_out(x)
+        return x
+    
+    def train():
+
+    def validate():
+
+ 
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()

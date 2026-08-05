@@ -7,6 +7,10 @@ from model import CNN
 from dataset import PreprocessedDataset, load_and_preprocess
 from datamodule import create_dataloaders
 
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+torch.backends.cuddn.deterministic = True
+
 preprocessor = PreprocessedDataset()
 X, y = preprocessor.load_and_preprocess()
 

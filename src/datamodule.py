@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from dataset import PreprocessedDataset, load_and_preprocess
 
 def create_dataloaders(X, y):
-    subjects = list(range(1, 110))
+    subjects = list(range(1, 110)) # 109 participants
 
     train_subjects, test_subjects = train_test_split(subjects, test_size=0.2, random_state=42)
 
