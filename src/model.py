@@ -3,15 +3,35 @@ import torch
 import torch.nn as nn
 import math
 
+
+"""
+
+IMPORTANT TO DOs:
+
+* add patch encoder that adds positional encoding or confirm with other code
+* ensure all emb_size are embed_dim or vice versa
+* ensure for all classes used the required arguments are used
+* visualize in computational graphs
+* make sure there are no typos
+* ensure right sequence shapes (shape tracking)
+* remove unnecessary code blocks
+
+"""
+
+# ======================================================
+# Baseline Model for comparisons and testing pipeline
+# ======================================================
+
 class BaselineMLP(nn.Module):
+    """Initialize MLP"""
     def __init__(self, input_size, output_size=1) -> None:
-            self.layer_1 = torch.nn.Linear(input_size, 2 * input_size)
-            self.layer_2 = torch.nn.Linear(input_size * 2, input_size * 2)
-            self.layer_3 = torch.nn.Linear(input_size * 2, input_size)
-            self.layer_4 = torch.nn.Linear(input_size, int(input_size) / 4)
-            self.layer_out = torch.nn.Linear(int(input_size)/4, output_size)
-            self.dropout = torch.nn.Dropout(0.3)
-            self.relu = torch.nn.Sigmoid()
+        self.layer_1 = torch.nn.Linear(input_size, 2 * input_size)
+        self.layer_2 = torch.nn.Linear(input_size * 2, input_size * 2)
+        self.layer_3 = torch.nn.Linear(input_size * 2, input_size)
+        self.layer_4 = torch.nn.Linear(input_size, int(input_size) / 4)
+        self.layer_out = torch.nn.Linear(int(input_size)/4, output_size)
+        self.dropout = torch.nn.Dropout(0.3)
+        self.relu = torch.nn.Sigmoid()
     
     def forward(self, x):
         x = self.relu(self.layer_1(x))
@@ -26,33 +46,94 @@ class BaselineMLP(nn.Module):
         return x
     
     def train():
+        # backward pass included
 
     def validate():
 
- 
+
+# ======================================
+# CNN - The tokenizer / patch extractor
+# ======================================
+
+"""transformation of continuous time-series values into discrete
+token sequences/localized patches which self-attention mechanisms 
+can then work with"""
+
 class CNN(nn.Module):
-    def __init__(self):
+    def __init__(self, num_channels, num_classes, embedding_dim=128):
         super(CNN, self).__init__()
 
-        self.network == nn.Sequential(
-            nn.Conv2d(),
-            nn.ReLu(),
-            nn.Flatten(),
-            nn.Linear
+        # Convolutional layers
+        # choice between Conv1d and Conv2d was hard
+        # look into kernel size and stride/padding choices!
+        self.conv_layers == nn.Sequential(
+            nn.Conv1d(num_channels, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.MaxPool1d(kernel_size=2, stride=2)
+
+
+            nn.Conv1d(64, 128, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.MaxPool1d(kernel_size=2, stride=2)
         )
 
+        self.flatten = nn.Flatten()
+        self.embedding_layer = nn.Linear(128 * (num_samples // 4), embedding_dim)
+
         def forward(self, x):
-            return self.network(x)
+            x = self.conv_layers(x)
+            x = self.flatten(x)
+            x = self.embedding_layer(x)
+            return x
 
 
+# ===================
+# Patch Embedding
+# ===================
+
+"""dividing our large arrays into smaller patches to reduce the
+spatial dimensions of the input for the Transformer (requires fixed-size input)"""
+
+# unsure whether necessary or adding unncessary complexity
+# which patch size is the best?
 class PatchEmbedding(nn.Module):
-    def __init__(self, emb_size):
+    def __init__(self, patch_size=32, in_channels=32, emb_size=128):
+        super(PatchEmbedding, self).__init__()
 
-    def forward(self, x: Tensor) -> Tensor:
+        # Number of patches
+        self.num_patches = (in_channels // patch_size)
 
-        return x
+        # Ebedding layer to project flattened patch into higher dim
+        self.embedding_layer = nn.Linear(patch_size, embed_dim)
+
+    def forward(self, x):
+        """
+        Args: x: Input EEG data with shape (batch_size, num_channels, num_time_points)
+        Returns: embeddings: Patch embeddings with shape (batch_size, num_patches, embed_dims)
+        """
+        B, C, T = x.shape # batch_size, num_channels, num_time_points
+
+        if C % self.patch_size != 0:
+            raise ValueError(f"Number of channels {C} must be divisible by patch size {self.patch_size}")
+
+        # Reshape and permute to form patches
+        x_patches = x.view(B, C // self.patch_sizes, self.patch_size, T)
+        x_patches = x_patches.permute(0, 2, 1, 3).contiguous() # (B, patch_size, num_patches, T)
+
+        # Flatten channel and time dimensions
+        x_patches = x_patches.view(B, self.num_patches, -1) # (B, num_patches, patch_size * T)
+
+        # Linear projection to embeded patches
+        embeddings = self.embedding_layer(x_patches)
+
+        return embeddings
 
 
+# =====================================
+# Different blocks of the Transformer
+# =====================================
+
+# Attentional block
 class MultiHeadAttention(nn.Module):
     
     def __init__(self, emb_size, num_heads, dropout):
@@ -76,7 +157,8 @@ class MultiHeadAttention(nn.Module):
         values = rearrange(self.values(x), "b n (h d) -> b h n d", h = self.num_heads)
         keys = rearrange(self.keys(x), "b n (h d) -> b h n d", h = self.num_heads)
 
-# rewrite following passage and 
+    # the following was just a code copy for inspiration - try to get inspired and adapt to your needs
+    # do we even want scaled dot product attention?
 
     def scaled_dot_product_attention(self, Q, K, V, mask=None):
         attn_scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(self.d_k)
@@ -104,6 +186,7 @@ class MultiHeadAttention(nn.Module):
         output = self.W_o(self.combine_heads(attn_output))
         return output
 
+# Residual Connections
 # code source adapted from: https://github.com/eeyhsong/EEG-Transformer/blob/main/Trans.py
 class ResidualConn(nn.Module):
     def __init__(self, fn):
@@ -116,6 +199,14 @@ class ResidualConn(nn.Module):
         x += res
         return x
 
+# Activation function
+# https://docs.pytorch.org/docs/2.13/generated/torch.nn.SiLU.html#torch.nn.SiLU
+class SiLU(nn.Module):
+    def forward(self, input:Tensor) -> Tensor:
+        log_sigmoid = 1 / (1 + np.exp(-input))
+        return (input * log_sigmoid)
+    
+# Feed-forward blocks
 class FeedForwardBlock(nn.Sequential):
     def __init__(self, emb_size, expansion, drop_p):
         """
@@ -127,14 +218,8 @@ class FeedForwardBlock(nn.Sequential):
             nn.Dropout(drop_p)
             nn.Linear(expansion * emb_size, emb_size)
         )
-
-# https://docs.pytorch.org/docs/2.13/generated/torch.nn.SiLU.html#torch.nn.SiLU
-class SiLU(nn.Module):
-    def forward(self, input:Tensor) -> Tensor:
-        log_sigmoid = 1 / (1 + np.exp(-input))
-        return (input * log_sigmoid)
         
-
+# Positional encoding
 class PositionalEncoding(nn.Module):
     def __init__(self, emb_size, max_seq_length):
         super(PositionalEncoding, self).__init__()
@@ -145,10 +230,33 @@ class PositionalEncoding(nn.Module):
         return x + self.pe[:, :x.size(1)] 
         # 'x.size(1)' to match seq_length of x
 
+
+# ==========================================
+# Transformer for capturing global relations
+# ==========================================
+
+# look here for some code inspo: 
+# https://github.com/reshalfahsi/eeg-motor-imagery-classification/blob/master/EEG_Motor_Imagery_Classification_Using_CNN_Transformer_and_MLP.ipynb
+
+"""Encoder-only architecture since the goal is just classification
+and does not involve any sequence generation"""
+
+"""
+PositionalEncoding
+MultiHeadAttention
+# add & norm
+FeedForwardBlock
+"""
+
 class EncoderBlock(nn.Sequential):
-    def __init__(self, emb_size, num_heads, expansion, dropout):
-        super().__init__(
-            ResidualConn(nn.Sequential(
+    def __init__(self, embed_dim, num_heads, expansion, dropout):
+        super(EncoderBlock, self).__init__()
+
+        self.attention = MultiHeadAttention(embed_dim, num_heads)
+        self.norm1 = nn.LayerNorm(embed_dim)
+        
+        """
+        ResidualConn(nn.Sequential(
                 nn.LayerNorm(emb_size),
                 MultiHeadAttention(emb_size, num_heads, dropout),
                 nn.Dropout(drop_p)
@@ -160,37 +268,60 @@ class EncoderBlock(nn.Sequential):
                     nn.Dropout(dropout)
                 )
             ))
-            
-# do we need a decoder layer?
-class DecoderLayer(nn.Module):
-    def __init__(self, emb_size, num_heads, expansion, dropout):
-        super(DecoderLayer, self).__init__()
-        self.self_attn = MultiHeadAttention(emb_size, num_heads)
-        self.cross_attn = MultiHeadAttention(emb_size, num_heads)
-        self.feed_forward = FeedForwardBlock(emb_size, expansion)
-        self.norm1 = nn.LayerNorm(emb_size)
-        self.norm2 = nn.LayerNorm(emb_size)
-        self.norm3 = nn.LayerNorm(emb_size)
-        self.dropout = nn.Dropout(dropout)
+        """
 
-    def forward(self, x, enc_output, src_mask, tgt_mask):
-        attn_output = self.self_attn(x, x, x, tgt_mask)
-        x = self.norm1(x + self.dropout(attn_output))
-        # cross attention attends to encoder output
-        attn_output = self.cross_attn(x, enc_output, enc_output, src_mask)
-        x = self.norm2(x + self.dropout(attn_output))
-        ff_output = self.feed_forward(x)
-        x = self.norm3(x + self.dropout(ff_output))
-        return x
 
-# code inspo: https://github.com/reshalfahsi/eeg-motor-imagery-classification/blob/master/EEG_Motor_Imagery_Classification_Using_CNN_Transformer_and_MLP.ipynb
+# ======================
+# Final MLP Classifier
+# ======================
 
 class MLPClassifier(nn.Module):
     def __init__(self, eeg_channel, dropout=0.1):
         super().__init__()
+
         self.mlp(nn.Sequential(
             nn.Linear(eeg_channel * 2, eeg_channel // 2)
             nn.ReLU(True),
             nn.Dropout(dropout),
             nn.Linear(eeg_channel // 2, 1),
         ))
+
+
+# ====================================
+# # Full & final Model - EEGClassifier
+# ====================================
+
+class EEGClassifier(nn.Module):
+    def __init__(self, patch_size=32, in_channels=32, embed_dim=128, 
+                 num_patches = 10, out_channels_cnn=64,
+                 transfomer_layers=2, num_heads=4, ff_dim=256,
+                 expansion = ?, dropout_rate=0.1):
+        super(EEGClassifier, self).__init__()
+
+         """
+            CNN
+            EncodingBlock
+            MLPClassifier
+            """
+    
+        self.patch_embedding = PatchEmbedding(patch_size, in_channels, embed_dim)
+        # Patch Encoder here?
+        self.cnn = CNN(embed_dim, out_channels_cnn, # needed? kernel_size=3, stride=1, padding=1)
+        self.transformer = EncoderBlock(embed_dim, num_head, expansion, dropout_rate)
+        self.mlp = MLPClassifier(out_channels_cnn * (num_patches // 2), 1) # assuming pooling reduces patches by half
+
+    def forward(self, x):
+        """
+        Args: x: Input EEG data (batch_size, num_channels, num_time_points)
+        Returns: logits: ...for classification
+        """
+        patch_embeddings = self.patch_embedding(x) # shape: (batch_size, num_patches, embed_dim)
+        # encoded_patches = self.patch_encoder(patch_embeddings)?
+        transformer_input = rearrange(#encoded_patches, 'b p d -> p b d')
+        transformer_output = self.transformer(transformer_input)
+        transformer_output = rearrange(transformer_output, 'p b d -> b p d')
+        cnn_features = self.cnn(transformer_output)
+        flattened_features = rearrange(cnn_features, 'b p d -> b (p d)')
+        logits = self.mlp(flattened_features) # shape: (batch_size, 1)
+        
+        return logits.squeeze() # squeeze to remove single dim for binary classification

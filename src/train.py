@@ -14,7 +14,9 @@ torch.backends.cuddn.deterministic = True
 preprocessor = PreprocessedDataset()
 X, y = preprocessor.load_and_preprocess()
 
-# model = CNNTransformer()
+# model = EEGClassifier(self, patch_size=32, in_channels=32, embed_dim=128, 
+# num_patches = 10, out_channels_cnn=64, transfomer_layers=2, num_heads=4, 
+# ff_dim=256, expansion = ?, dropout_rate=0.1)
 
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 

@@ -22,17 +22,16 @@ The project aims to build on Ma et al. (2022) and Liao et al. (2025), but inspir
 The EEG Motor Movement/Imagery Dataset by Schalk (2009) is one of the standard BCI datasets commonly used in the field, besides the BCI Competition IV 2a dataset. The dataset contains a set of 64-channel EEGs from participants performing motor/imagery tasks. Since the python MNE library for EEG preprocessing provides access to it, it is very comfortable for application. Further descriptions and plots about the dataset can be found in 'notebooks/datapreprocessing.ipynb'.
 
 ### The Architecture
-1. EEG Data
-2. Preprocessing
+1. EEG Data Preprocessing
 * Feature extraction
 * Spectrogram generation & fusion of spectrograms for input to CNN
-3. CNN for capturing local dependencies
+2. CNN for capturing local dependencies
 * Temporal Convolutions: extract local rhythms & waveforms - the kernel is moving across time
 * Spatial Convolutions: capture channel interactions - the kernel is moving across electrodes
-4. Pooling/Downsampling
-5. Permutation
-6. Transformer-Encoder for capturing global dependencies
-7. MLP Classifier
+3. Pooling/Downsampling
+4. Permutation
+5. Transformer-Encoder for capturing global dependencies
+6. MLP Classifier
 
 #### Preprocessing
 _The knowledge of the following passage is based on the "Introduction to EEG-preprocessing" chapter in the section "Data analyses" in the book by Herholz et al. (2020)_
@@ -76,7 +75,7 @@ The training is therefore split into two phases:
 _now the decoder part gets ignored_
 * Phase 2: Input -> CNN Encoder (freeze) -> mu -> PosE -> Transformer -> pred
 
-**Forward Pass**: The input is first passed throug the CNN, then Transformer and finally classified. One can then compute the loss, which I do using the categorical cross entropy with label smoothing (again inspired by Liao et al. (2025)). 
+**Forward Pass**: The input is first passed through the CNN, then Transformer and finally classified. One can then compute the loss, which I do using the categorical cross entropy with label smoothing (again inspired by Liao et al. (2025)). 
 **Backward Pass**: The loss is then backpropagated through the network to calculate the gradients of the loss function with respect to the weights and biases. 
 **Weight Update**: The computed gradients from the backward pass are then used to update the network's parameters using the optimization algorithm Adam:
 
