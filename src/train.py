@@ -8,9 +8,12 @@ from dataset import PreprocessedDataset, load_and_preprocess
 from datamodule import create_dataloaders
 
 
+# Device is assigned to cuda (GPU) if available
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# Ensure deterministic behavior crucial for replication
 torch.backends.cuddn.deterministic = True
 
+# Preprocess data
 preprocessor = PreprocessedDataset()
 X, y = preprocessor.load_and_preprocess()
 
@@ -20,6 +23,7 @@ X, y = preprocessor.load_and_preprocess()
 
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
+# Create train and test dataloaders
 train_loader, test_loader = create_dataloaders(X, y)
 
 # Training loop
