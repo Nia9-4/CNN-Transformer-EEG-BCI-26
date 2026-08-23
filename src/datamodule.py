@@ -2,9 +2,15 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 from dataset import PreprocessedDataset, load_and_preprocess
 
+
+"""Data loaders organize data into batches (small groups) 
+and mixes up the order of iitems which helps the models learn better"""
+
+
 def create_dataloaders(X, y):
     subjects = list(range(1, 110)) # 109 participants
 
+    # 80 % of subjects used for training, 20 % for testing
     train_subjects, test_subjects = train_test_split(subjects, test_size=0.2, random_state=42)
 
     X_train = []
@@ -26,7 +32,8 @@ def create_dataloaders(X, y):
     train_dataset = PreprocessedDataset(X_train, y_train)
     test_dataset = PreprocessedDataset(X_test, y_test)
 
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True) 
+    # some other projects use batch size of 16 with the PhysioNet dataset
     test_loader = DataLoader(test_dataset, batch_size=32)
 
     return train_loader, test_loader
