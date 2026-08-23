@@ -7,15 +7,11 @@ from mne.preprocessing import ICA
 from torch.utils.data import Dataset
 import warnings
 
-%matplotlib notebook
-
+# predefine plotting parameters for saving code lines
 matplotlib.rcParams['figure.figsize'] = (5, 5)
-
 
 """A plotted analysis of the dataset can be found in a separate
 Jupyter notebook in the folder 'notebooks'"""
-
-
 
 class PreprocessedDataset(Dataset):
     def __init__(self, dataset_path, subject_ids=None, preload=True, filter_freqs=(1.0, 50.0), baseline=None):
@@ -60,12 +56,14 @@ class PreprocessedDataset(Dataset):
         X = np.concatenate(X_subjects, axis=0)
         y = np.concatenate(y_subjects, axis=0)
 
-        # raw event IDs do not start at 0 which PyTorch classification losses expect
+        # raw event IDs do not start at 0 which PyTorch classification losses expect 
+        # -> mapping to (0, 1) binary scale
         label_map = {
             2: 0,
             3: 1
         }
 
+        # define our target vector y
         # T1 = 0 and T2 = 1
         y = np.array([label_map[label] for label in epochs.events[:, -1]])
 
