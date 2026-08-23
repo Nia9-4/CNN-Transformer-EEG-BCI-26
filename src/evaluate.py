@@ -4,7 +4,7 @@ from model import CNN
 
 model = CNN()
 
-model.load_state_dict(torh.load("checkpoint.pt"))
+model.load_state_dict(torch.load("checkpoint.pt"))
 
 model.eval()
 
