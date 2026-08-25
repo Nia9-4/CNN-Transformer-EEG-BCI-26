@@ -8,7 +8,7 @@ import math
 
 IMPORTANT TO DOs:
 
-* look at dimensions from baseline MLP - does that really make sense?
+* look at dimensions from baseline MLP -> verify
 * observe patch embedding code more in detail
 * add patch encoder that adds positional encoding and confirm with other code
 * ensure for all classes use of required arguments 
@@ -31,21 +31,29 @@ PIPELINE:
 # ======================================================
 
 class BaselineMLP(nn.Module):
-    """Initialize MLP"""
-    def __init__(self, input_size, output_size=1) -> None:
+
+    def __init__(self, input_dim, num_classes, hidden_dim=64, dropout_rate=0.5) -> None:
+        # EEG datasets small & noisy -> strong dropout suggested
+
         # call constructor of parent class (nn.Module)
         super(BaselineMLP, self).__init__()
-
-        # understand why we expand and then decrease - make sense?
-        self.layer_1 = nn.Linear(input_size, 2 * input_size)
-        self.layer_2 = nn.Linear(input_size * 2, input_size * 2)
-        self.layer_3 = nn.Linear(input_size * 2, input_size)
-        self.layer_4 = nn.Linear(input_size, int(input_size) / 4)
-        self.layer_out = nn.Linear(int(input_size)/4, output_size)
-        self.dropout = nn.Dropout(0.3)
-        self.relu = nn.Sigmoid()
-    
-    def forward(self, x):
+        self.network = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout_rate),
+            nn.Linear(hidden_dim, hidden_dim // 2),
+            nn.ReLU()
+            nn.Dropout(dropout_rate),
+            nn.Linear(hidden_dim // 2, num_classes)
+        )
+        """ ALTERNATIVE CODE
+        self.layer_1 = nn.Linear(input_dim, hidden_dim)
+        self.layer_2 = nn.Linear(hidden_dim, hidden_dim // 2)
+        self.layer_out = nn.Linear(hidden_dim // 2, num_classes)
+        self.dropout = nn.Dropout(dropout_rate)
+        self.relu = nn.Sigmoid() or nn.ReLU
+        
+        then in forward fct:
         x = self.relu(self.layer_1(x))
         x = self.dropout(x)
         x = self.relu(self.layer_2(x))
@@ -55,7 +63,10 @@ class BaselineMLP(nn.Module):
         x = self.relu(self.layer_4(x))
         x = self.dropout(x)
         x = self.layer_out(x)
-        return x
+        return x"""
+
+    def forward(self, x):
+        return self.network(x)
 
 
 # ===================
