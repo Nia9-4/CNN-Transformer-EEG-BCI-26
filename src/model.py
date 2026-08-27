@@ -35,12 +35,13 @@ class BaselineMLP(nn.Module):
 
     def __init__(self, input_dim, num_classes, hidden_dim=64, dropout_rate=0.5) -> None:
         # EEG datasets small & noisy -> strong dropout suggested
-
+        # 64 channels/electrodes -> 1:1 mapping
         # call constructor of parent class (nn.Module)
         super(BaselineMLP, self).__init__()
         
         self.layer_1 = nn.Linear(input_dim, hidden_dim)
         self.layer_2 = nn.Linear(hidden_dim, hidden_dim // 2)
+        # enforce dense representations (hidden_dim//2)
         self.layer_out = nn.Linear(hidden_dim // 2, num_classes)
         self.dropout = nn.Dropout(dropout_rate)
         self.relu = nn.ReLU()
