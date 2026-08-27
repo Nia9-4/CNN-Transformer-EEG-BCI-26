@@ -9,11 +9,12 @@ import math
 IMPORTANT TO DOs:
 
 * look at dimensions from baseline MLP -> verify
-* observe patch embedding code more in detail
-* add patch encoder that adds positional encoding and confirm with other code
+* line 100 perhaps 'continuous' instead of 'contiguous'?
+* line 104: just change in the view but not multiplication as intended
+* positional encoding code block
 * ensure for all classes use of required arguments 
 * remove unnecessary code blocks & ensure code contingencies
-* make sure there are no typos
+* make sure there are no typos (commata, vars have same name)
 * ensure right sequence shapes (shape tracking)
 * visualize in computational graphs
 
@@ -37,36 +38,34 @@ class BaselineMLP(nn.Module):
 
         # call constructor of parent class (nn.Module)
         super(BaselineMLP, self).__init__()
-        self.network = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Dropout(dropout_rate),
-            nn.Linear(hidden_dim, hidden_dim // 2),
-            nn.ReLU()
-            nn.Dropout(dropout_rate),
-            nn.Linear(hidden_dim // 2, num_classes)
-        )
-        """ ALTERNATIVE CODE
+        
         self.layer_1 = nn.Linear(input_dim, hidden_dim)
         self.layer_2 = nn.Linear(hidden_dim, hidden_dim // 2)
         self.layer_out = nn.Linear(hidden_dim // 2, num_classes)
         self.dropout = nn.Dropout(dropout_rate)
-        self.relu = nn.Sigmoid() or nn.ReLU
+        self.relu = nn.ReLU()
         
-        then in forward fct:
-        x = self.relu(self.layer_1(x))
-        x = self.dropout(x)
-        x = self.relu(self.layer_2(x))
-        x = self.dropout(x)
-        x = self.relu(self.layer_3(x))
-        x = self.dropout(x)
-        x = self.relu(self.layer_4(x))
-        x = self.dropout(x)
-        x = self.layer_out(x)
-        return x"""
+        def forward(self, x):
+            x = self.relu(self.layer_1(x))
+            x = self.dropout(x)
+            x = self.relu(self.layer_2(x))
+            x = self.dropout(x)
+            x = self.layer_out(x)
+            return x
 
-    def forward(self, x):
-        return self.network(x)
+        """ ALTERNATIVE CODE:
+                self.network = nn.Sequential(
+                nn.Linear(input_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Dropout(dropout_rate),
+                nn.Linear(hidden_dim, hidden_dim // 2),
+                nn.ReLU()
+                nn.Dropout(dropout_rate),
+                nn.Linear(hidden_dim // 2, num_classes)
+                )
+        
+                def forward(self, x):
+                    return self.network(x)"""
 
 
 # ===================
@@ -118,9 +117,15 @@ class PositionalEncoding(nn.Module):
     def __init__(self, emb_dim, max_seq_length):
         super(PositionalEncoding, self).__init__()
         # missing
+        num_pose = []
 
     def forward(self, x):
         # add positional encoding to input x
+        B, N, PT = x.shape
+        for i in num_pose:
+            pe = x.view(B, N, PT, i)
+
+        # delete this perhaps?
         return x + self.pe[:, :x.size(1)] 
         # 'x.size(1)' to match seq_length of x
 
@@ -137,8 +142,7 @@ class CNN(nn.Module):
     def __init__(self, num_channels, num_classes, embedding_dim=128):
         super(CNN, self).__init__()
 
-        # Convolutional layers
-        # choice between Conv1d and Conv2d was hard
+        # choice between Conv1d and Conv2d was hard -> so why 1d?
         # look into kernel size and stride/padding choices!
         self.conv_layers == nn.Sequential(
             nn.Conv1d(num_channels, 64, kernel_size=3, stride=1, padding=1),
@@ -159,6 +163,7 @@ class CNN(nn.Module):
             x = self.flatten(x)
             x = self.embedding_layer(x)
             return x
+        # what is the final dimension of the output vector
 
 
 # =====================================
@@ -227,7 +232,7 @@ class ResidualConn(nn.Module):
     def forward(self, x, **kwargs):
         res = x
         x = self.fn(x, **kwargs)
-        x += res
+        x += res # write the syntax in a better way here
         return x
 
 # Activation function
@@ -280,7 +285,12 @@ class EncoderBlock(nn.Sequential):
 
         self.attention = MultiHeadAttention(emb_dim, num_heads)
         self.norm1 = nn.LayerNorm(emb_dim)
-        
+
+    def forward(self, x):
+        x = self.attention(x)
+        x = self.norm1(x)
+        # add more here
+        return x
         """
         ResidualConn(nn.Sequential(
                 nn.LayerNorm(emb_dim),
@@ -301,17 +311,23 @@ class EncoderBlock(nn.Sequential):
 # Final MLP Classifier
 # ======================
 
+# ensure the code works - rewritten from self.mlp form
+
 class MLPClassifier(nn.Module):
     def __init__(self, eeg_channel, dropout=0.1):
         super(MLPClassifier, self).__init__()
 
-        # change this code convention to other convention?
-        self.mlp(nn.Sequential(
-            nn.Linear(eeg_channel * 2, eeg_channel // 2)
-            nn.ReLU(True),
-            nn.Dropout(dropout),
-            nn.Linear(eeg_channel // 2, 1),
-        ))
+        self.linear_in = nn.Linear(eeg_channel * 2, eeg_channel // 2)
+        self.linear_out = nn.Linear(eeg_channel // 2, 1)
+        self.relu = nn.ReLU(True)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        x = self.linear_in(x)
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.linear_out(x)
+        return x
 
 
 # ====================================
@@ -327,13 +343,15 @@ class EEGClassifier(nn.Module):
         super(EEGClassifier, self).__init__()
 
          """
+            Patch Embedding
+            Positional Encoding
             CNN
             EncodingBlock
             MLPClassifier
             """
     
         self.patch_embedding = PatchEmbedding(patch_size, in_channels, emb_dim)
-        # Patch Encoder here
+        # positional encodings/patch encoder here
         self.cnn = CNN(emb_dim, out_channels_cnn, ?) # needed? kernel_size=3, stride=1, padding=1)
         self.transformer = EncoderBlock(emb_dim, num_head, expansion, dropout_rate)
         self.mlp = MLPClassifier(out_channels_cnn * (num_patches // 2), 1) # assuming pooling reduces patches by half
@@ -341,7 +359,7 @@ class EEGClassifier(nn.Module):
     def forward(self, x):
         """
         Args: x: Input EEG data (batch_size, num_channels, num_time_points)
-        Returns: logits: ...for classification
+        Returns: logits for classification
         """
         patch_embeddings = self.patch_embedding(x) # shape: (batch_size, num_patches, emb_dim)
         # encoded_patches = self.patch_encoder(patch_embeddings)?
