@@ -8,10 +8,7 @@ import math
 
 IMPORTANT TO DOs:
 
-* look at dimensions from baseline MLP -> verify
-* line 100 perhaps 'continuous' instead of 'contiguous'?
-* line 104: just change in the view but not multiplication as intended
-* positional encoding code block
+* check for patchemb whether x has three dimensions or four
 * ensure for all classes use of required arguments 
 * remove unnecessary code blocks & ensure code contingencies
 * make sure there are no typos (commata, vars have same name)
@@ -78,14 +75,14 @@ spatial dimensions of the input for the Transformer (requires fixed-size input)"
 
 # which patch size is the best?
 class PatchEmbedding(nn.Module):
-    def __init__(self, patch_size=32, in_channels=32, emb_dim=128):
+    def __init__(self, in_channels=32, patch_size=32, emb_dim=128):
         super(PatchEmbedding, self).__init__()
 
-        # Number of patches
-        self.num_patches = (in_channels // patch_size)
-
-        # Ebedding layer to project flattened patch into higher dim
-        self.embedding_layer = nn.Linear(patch_size, emb_dim)
+        self.patch_size = patch_size
+        self.emb_dim = emb_dim
+        
+        # Linear layer to project flattened patch into higher embedding dim
+        self.embedding_layer = nn.Linear(in_channels * patch_size, emb_dim)
 
     def forward(self, x):
         """
@@ -93,21 +90,23 @@ class PatchEmbedding(nn.Module):
         Returns: embeddings: Patch embeddings with shape (batch_size, num_patches, emb_dim)
         """
         B, C, T = x.shape # batch_size, num_channels, num_time_points
+        num_patches = T // self.patch_size 
 
-        if C % self.patch_size != 0:
-            raise ValueError(f"Number of channels {C} must be divisible by patch size {self.patch_size}")
+        if T % self.patch_size != 0:
+            raise ValueError(f"Total time points {T} must be divisible by patch size {self.patch_size}")
 
         # Reshape and permute to form patches
-        x_patches = x.view(B, C // self.patch_sizes, self.patch_size, T)
-        x_patches = x_patches.permute(0, 2, 1, 3).contiguous() # (B, patch_size, num_patches, T)
+        x = x.view(B, C, num_patches, self.patch_size)
+        x = x_patches.permute(0, 2, 1, 3).contiguous() # (batch_size, num_patches, num_channels, num_time_points)
 
-        # Flatten channel and time dimensions
-        x_patches = x_patches.view(B, self.num_patches, -1) # (B, num_patches, patch_size * T)
+        # Flatten channel and time dimensions -> tokens
+        x = x_patches.reshape(B, self.num_patches, C * self.patch_size) # (B, num_patches, in_channels * T)
 
         # Linear projection to embeded patches
-        embeddings = self.embedding_layer(x_patches)
+        embeddings = self.embedding_layer(x)
 
-        return embeddings
+        # alternatively delete num_patches as output (or ensure right dimensionality)
+        return x, num_patches
 
 
 # ===================
@@ -115,25 +114,33 @@ class PatchEmbedding(nn.Module):
 # ===================
 
 class PositionalEncoding(nn.Module):
-    def __init__(self, emb_dim, max_seq_length):
+    def __init__(self, emb_dim, max_patches):
         super(PositionalEncoding, self).__init__()
-        # missing
-        num_pose = []
+        self.emb_dim = emb_dim
+
+        # Positional encoding matrix
+        pe = torch.zeros(max_patches, emb_dim)
+
+        # Sinusoidal positional encoding
+        # Position indices
+        pos = torch.arange(0, max_patches, dtype=torch.float).unsqueeze(1) # (max_patches, 1)
+
+        # Division term (tensor of even indices since pose alternate between sin/cos)
+        div_term = torch.exp(torch.arange(0, emb_dim, 2).float() * (-torch.log(torch.tensor(10000.0)) / emb_dim))
+
+        pe[:, 0::2] = torch.sin(pos * div_term) # every second column starting from index 0
+        pe[:, 1::2] = torch.cos(pos * div_term) # for all odd indices cosinusoidal values
+
+        self.register_buffer('pe', pe)
 
     def forward(self, x):
-        # add positional encoding to input x
-        B, N, PT = x.shape
-        for i in num_pose:
-            pe = x.view(B, N, PT, i)
-
-        # delete this perhaps?
-        return x + self.pe[:, :x.size(1)] 
-        # 'x.size(1)' to match seq_length of x
+        x = x + self.pe[:, :x.size(1), :] # (batch_size, seq_len, d_model)
+        return x
 
 
-# ======================================
-# CNN - The tokenizer / patch extractor
-# ======================================
+# ====
+# CNN 
+# ====
 
 """transformation of continuous time-series values into discrete
 token sequences/localized patches which self-attention mechanisms 
