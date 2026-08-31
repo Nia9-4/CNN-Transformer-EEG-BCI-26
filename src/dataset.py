@@ -83,7 +83,7 @@ class PreprocessedDataset(Dataset):
             idx -= len(epochs)
         raise IndexError(f'Index {idx} is out of bounds')
 
-    # Fct for plotting PSDs quickly etc. (may be delayed later)
+    # Function for plotting PSDs quickly etc. (may be delayed later)
     def get_epoch(self, idx):
         """Retrieve specific epoch and its label"""
         total_len = 0
@@ -93,4 +93,3 @@ class PreprocessedDataset(Dataset):
                 return self.epochs_list[i][epoch_idx]
             total_len += len(epochs)
         raise IndexError(f'Index {idx} is out of bounds')
-
