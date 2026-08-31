@@ -3,14 +3,18 @@ import torch
 from model import BaselineMLP, EEGClassifier
 
 
-"""TO DO:
+"""
+TO DO:
+
 * check whether functions are still missing or everything works
 * do models really have to be loaded separately?
 * perform little test with small dataset
+* add plots for visualization purpose
 """
 
-
+# ========================
 # Evaluate baseline model
+# ========================
 
 model_baseline = BaselineMLP(input_dim=, num_classes=) 
 model_baseline.load_state_dict(torch.load("checkpoint.pt"))
@@ -28,7 +32,9 @@ acc_baseline = correct_baseline / len(test_loader.dataset)
 print(f"Accuracy of the baseline MLP: {acc_baseline}")
 
 
+# ====================
 # Evaluate main model
+# ====================
 
 model_main = EEGClassifier() # add params here
 model_main.load_state_dict(torch.load("checkpoint.pt"))

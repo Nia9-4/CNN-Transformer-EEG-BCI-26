@@ -9,7 +9,9 @@ from dataset import PreprocessedDataset, load_and_preprocess
 from datamodule import create_dataloaders
 
 
-""" TO DO:
+""" 
+TO DO:
+
 * ensure all necessary params given
 * training loop completeness and functionality
 """
