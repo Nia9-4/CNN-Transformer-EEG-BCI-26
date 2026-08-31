@@ -8,11 +8,12 @@ import math
 
 IMPORTANT TO DOs:
 
+* check CNN & rewrite Transformer
 * check for patchemb whether x has three dimensions or four
-* ensure for all classes use of required arguments 
-* remove unnecessary code blocks & ensure code contingencies
+* ensure for all classes use of required arguments
+* ensure right sequence shapes/dims (shape tracking)
 * make sure there are no typos (commata, vars have same name)
-* ensure right sequence shapes (shape tracking)
+* test with small dataset
 * visualize in computational graphs
 
 
@@ -147,7 +148,7 @@ token sequences/localized patches which self-attention mechanisms
 can then work with"""
 
 class CNN(nn.Module):
-    def __init__(self, num_channels, num_classes, embedding_dim=128):
+    def __init__(self, num_channels, num_classes, emb_dim=128):
         super(CNN, self).__init__()
 
         # choice between Conv1d and Conv2d was hard -> so why 1d?
@@ -164,7 +165,7 @@ class CNN(nn.Module):
         )
 
         self.flatten = nn.Flatten()
-        self.embedding_layer = nn.Linear(128 * (num_samples // 4), embedding_dim)
+        self.embedding_layer = nn.Linear(128 * (num_samples // 4), emb_dim)
 
         def forward(self, x):
             x = self.conv_layers(x)
@@ -180,7 +181,7 @@ class CNN(nn.Module):
 
 # Attentional block
 class MultiHeadAttention(nn.Module):
-    def __init__(self, emb_dim, num_heads, dropout):
+    def __init__(self, emb_dim, num_heads, dropout_rate):
         """
         emb_dim: dimensionality of the input
         num_heads: number of attention heads to split input into
@@ -193,7 +194,7 @@ class MultiHeadAttention(nn.Module):
         self.keys = nn.Linear(emb_dim, emb_dim)
         self.queries = nn.Linear(emb_dim, emb_dim)
         self.values = nn.Linear(emb_dim, emb_dim)
-        self.att_drop = nn.Dropout(dropout)
+        self.att_drop = nn.Dropout(dropout_rate)
         self.projection = nn.Linear(emb_dim, emb_dim)
 
     def forward(self, x: Tensor, mask: Tensor = None) -> Tensor:
@@ -252,14 +253,14 @@ class SiLU(nn.Module):
     
 # Feed-forward block
 class FeedForwardBlock(nn.Sequential):
-    def __init__(self, emb_dim, expansion, drop_p):
+    def __init__(self, emb_dim, expansion, dropout_rate):
         """
         emb_dim: dim of model's in- & output
         expansion: dim of inner layer in FFN"""
         super(FeedForwardBlock, self).__init__()
         self.linear = nn.Linear(emb_dim, expansion * emb_dim)
         self.silu = nn.SiLU()
-        self.dropout = nn.Dropout(drop_p)
+        self.dropout = nn.Dropout(dropout_rate)
         self.out = nn.Linear(expansion * emb_dim, emb_dim)
 
     def forward(self, x):
@@ -288,7 +289,7 @@ FeedForwardBlock
 """
 
 class EncoderBlock(nn.Sequential):
-    def __init__(self, emb_dim, num_heads, expansion, dropout):
+    def __init__(self, emb_dim, num_heads, expansion, dropout_rate):
         super(EncoderBlock, self).__init__()
 
         self.attention = MultiHeadAttention(emb_dim, num_heads)
@@ -302,14 +303,14 @@ class EncoderBlock(nn.Sequential):
         """
         ResidualConn(nn.Sequential(
                 nn.LayerNorm(emb_dim),
-                MultiHeadAttention(emb_dim, num_heads, dropout),
-                nn.Dropout(drop_p)
+                MultiHeadAttention(emb_dim, num_heads, dropout_rate),
+                nn.Dropout(dropout_rate)
             )),
             ResidualConn(nn.Sequential(
                 nn.LayerNorm(emb_dim),
                 FeedForwardBlock(
-                    emb_dim, expansion=forward_expansion, dropout=forward_drop_p),
-                    nn.Dropout(dropout)
+                    emb_dim, expansion=forward_expansion, dropout_rate=forward_dropout_rate),
+                    nn.Dropout(dropout_rate)
                 )
             ))
         """
@@ -322,13 +323,13 @@ class EncoderBlock(nn.Sequential):
 # ensure the code works - rewritten from self.mlp form
 
 class MLPClassifier(nn.Module):
-    def __init__(self, eeg_channel, dropout=0.1):
+    def __init__(self, eeg_channel, dropout_rate=0.1):
         super(MLPClassifier, self).__init__()
 
         self.linear_in = nn.Linear(eeg_channel * 2, eeg_channel // 2)
         self.linear_out = nn.Linear(eeg_channel // 2, 1)
         self.relu = nn.ReLU(True)
-        self.dropout = nn.Dropout(dropout)
+        self.dropout = nn.Dropout(dropout_rate)
 
     def forward(self, x):
         x = self.linear_in(x)
