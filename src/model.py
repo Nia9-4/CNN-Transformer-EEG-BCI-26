@@ -351,7 +351,7 @@ class EEGClassifier(nn.Module):
     
         super(EEGClassifier, self).__init__()
 
-         """
+            """
             Patch Embedding
             Positional Encoding
             CNN
