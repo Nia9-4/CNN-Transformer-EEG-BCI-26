@@ -22,7 +22,7 @@ class PreprocessedDataset(Dataset):
         self.baseline = baseline
         self.epochs_list = []
 
-    def load_and_preprocess(self)
+    def load_and_preprocess(self):
         # Empty lists to store the path for each subject
         X_subjects = []
         y_subjects = []
