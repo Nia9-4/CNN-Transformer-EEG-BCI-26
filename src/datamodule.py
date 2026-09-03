@@ -4,7 +4,7 @@ from dataset import PreprocessedDataset, load_and_preprocess
 
 
 """Data loaders organize data into batches (small groups) 
-and mixes up the order of iitems which helps the models learn better"""
+and mixes up the order of items which helps the models learn better"""
 
 
 def create_dataloaders(X, y):
