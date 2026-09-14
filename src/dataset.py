@@ -4,6 +4,7 @@ from mne.io import concatenate_raws, read_raw_edf
 from mne.datasets import eegbci
 from mne.preprocessing import ICA
 from torch.utils.data import Dataset
+from typing import Tuple
 
 
 """A plotted analysis of the dataset can be found in a separate

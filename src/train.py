@@ -2,31 +2,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mne 
 import math
-from mne.io import concatenate_raws, read_raw_edf
-from mne.datasets import eegbci
-from mne.preprocessing import ICA
-from sklearn.model_selection import train_test_split
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import CosineAnnealingLR, LambdaLR
-from sklearn.metrics import cohen_kappa_score
 from torch.utils.data import Dataset, DataLoader
 
-from model import BaselineMLP, EEGClassifier
-from dataset import PreprocessedDataset, load_data
+from model import PoorMLP, BaselineCNN, EEGClassifier
+from dataset import PreprocessedDataset
 from datamodule import create_dataloaders
 from evaluate import evaluate
 
 seed = 42
-torch.manual_seed(s)
-np.random.seed(s)
+torch.manual_seed(seed)
+np.random.seed(seed)
 
 
 # Device is assigned to cuda (GPU) if available
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-torch.backends.cuddn.deterministic = True
-torch.backends.cuddn.benchmark = False
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 torch.use_deterministic_algorithms(True, warn_only=True)
 
 
@@ -138,7 +133,7 @@ def plot_metrics(history):
     plt.xlabel('Epochs')
     plt.legend()
 
-    plt.sublot(1, 2, 2)
+    plt.subplot(1, 2, 2)
     plt.plot(epochs, history['val_kappa'], label='Val Kappa', color='magenta')
     plt.title('Validation Kappa')
     plt.xlabel('Epochs')
@@ -152,8 +147,7 @@ def plot_metrics(history):
 # Training the models
 # =======================
 # Load data 
-dataset = PreprocessedDataset(subject_ids=[1, 2, 3, 4], runs=[4])
-X, y = dataset.load_data()
+X, y = load_data()
 
 sample, label = dataset[0]
 print(f"Sample shape: {sample.shape}, Label: {label}")
@@ -186,13 +180,8 @@ trained_baseline, baseline_history = train(model=model_baseline, n_epochs=50, tr
 trained_poormlp, poor_history = train(model=model_poormlp, n_epochs=50, train_loader=train_loader, 
                                     val_loader=val_loader, optimizer=optimizer_poormlp, device=device)
 
-plt.figure(figsize=(12, 12))
-
-plt.subplot(3, 1, 1)
 plot_metrics(main_history)
 
-plt.subplot(3, 1, 2)
 plot_metrics(baseline_history)
 
-plt.subplot(3, 1, 1)
 plot_metrics(poor_history)

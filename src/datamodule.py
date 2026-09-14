@@ -1,6 +1,6 @@
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
-from dataset import PreprocessedDataset, load_data
+from dataset import PreprocessedDataset
 
 
 def create_dataloaders(X, y):
@@ -17,7 +17,7 @@ def create_dataloaders(X, y):
     # 70 % of subjects used for training, 10 % for validation during training
     train_subjects, val_subjects = train_test_split(train_val_subjects, test_size=0.125, random_state=42)
 
-    print(f"Subjects, train: {len(train_subjects)}, val: {len(val_subjects)}, test: {len(train_subjects)}")
+    print(f"Subjects, train: {len(train_subjects)}, val: {len(val_subjects)}, test: {len(test_subjects)}")
 
     train_dataset = PreprocessedDataset(subject_ids=train_subjects)
     val_dataset = PreprocessedDataset(subject_ids=val_subjects)

@@ -30,7 +30,7 @@ class PoorMLP(nn.Module):
         
     def forward(self, x):
         x = torch.mean(x, dim=2) # (batch, channels)
-        x = self.relu(self.layer_1(x))
+        x = self.elu(self.layer_1(x))
         x = self.dropout(x)
         x = self.elu(self.layer_2(x))
         x = self.dropout(x)
@@ -46,13 +46,13 @@ class BaselineCNN(nn.Module):
     def __init__(self, num_classes=2):
         super(BaselineCNN, self).__init__()
 
-        self.conv1 = nn.Conv1d(in_dim=64, out_dim=16, kernel_size=25)
+        self.conv1 = nn.Conv1d(in_channels=64, out_channels=16, kernel_size=25)
         self.pool = nn.AdaptiveAvgPool1d(1) # Reduce time dimension to 1
         self.fc = nn.Linear(16, num_classes)
-        self.relu = nn.ReLU()
+        self.elu = nn.ELU()
 
     def forward(self, x):
-        x = self.relu(self.conv1(x)) # (batch, 16, samples-24)
+        x = self.elu(self.conv1(x)) # (batch, 16, samples-24)
         x = self.pool(x).squeeze(-1) # (batch, 16)
         x = self.fc(x)               # (batch, 2)
         return x
@@ -183,8 +183,7 @@ class ResidualConnection(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        x = self.norm(x + self.block(x))
-        x = self.dropout(x)
+        x += self.dropout(self.block(self.norm(x)))
         return x
 
 
@@ -309,7 +308,8 @@ class EEGClassifier(nn.Module):
         self.cnn = CNN(n_channels=n_channels, emb_dim=emb_dim, fs=fs)
         self.positional_encoding = PositionalEncoding(emb_dim, max_patches) 
         self.transformer = EncoderBlock(emb_dim, n_heads, dropout)
-        self.mlp = MLPClassifier(tr_out_dim=emb_dim, pooling_type='concat') # Assuming pooling reduces patches by half
+        self.final_norm = nn.LayerNorm(emb_dim)
+        self.mlp = MLPClassifier(tr_out_dim=emb_dim) 
 
     def forward(self, x):
         """
@@ -321,6 +321,7 @@ class EEGClassifier(nn.Module):
         x = self.cnn(x) # (batch, n_channels, n_samples) -> (batch, time_reduced, emb_dim)
         x = self.positional_encoding(x) # (batch, time_reduced, emb_dim)
         x = self.transformer(x) # (batch, time_reduced, emb_dim)
+        x = self.final_norm(x)
         x = self.mlp(x) # (batch, time_reduced, emb_dim) -> (batch, 1)
         
         return x.squeeze(-1) # (batch, 1) -> (batch,)
