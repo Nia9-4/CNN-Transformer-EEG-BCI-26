@@ -1,95 +1,118 @@
 import numpy as np
-import matplotlib
 import mne 
 from mne.io import concatenate_raws, read_raw_edf
 from mne.datasets import eegbci
 from mne.preprocessing import ICA
 from torch.utils.data import Dataset
-import warnings
 
-# predefine plotting parameters for saving code lines
-matplotlib.rcParams['figure.figsize'] = (5, 5)
 
 """A plotted analysis of the dataset can be found in a separate
 Jupyter notebook in the folder 'notebooks'"""
 
+# Dataset documentation: https://www.physionet.org/content/eegmmidb/1.0.0/
+# MNE: https://mne.tools/stable/generated/mne.datasets.eegbci.load_data.html
+
+
 class PreprocessedDataset(Dataset):
-    def __init__(self, dataset_path, subject_ids=None, preload=True, filter_freqs=(1.0, 50.0), baseline=None):
-        self.dataset_path = dataset_path
-        self.subject_ids = subject_ids if subject_ids else range(1, 109) # all subjects
+    """
+    Initialize the dataset loader for the eegbci dataset
+    
+    Parameters:
+    - subject_ids: List of subject IDs to load
+    - runs: List of run numbers (e. g. [4] for left vs. right hand)
+    - preload: Whether to load data into memory
+    - filter_freqs: Tuple of low and high frequency for bandpass filtering
+    - baseline: Baseline correction
+    """
+    
+    def __init__(self, subject_ids=None, runs=None, preload=True, baseline=None):
+        BAD = {88, 89, 92, 100}
+        self.subject_ids = subject_ids if subject_ids else [s for s in range(1, 110) if s not in BAD] 
+                            # all subjects with reliable data
+        self.runs = runs if runs else [4, 8, 12] # runs for imagined left/right fist
         self.preload = preload
-        self.filter_freqs = filter_freqs
         self.baseline = baseline
-        self.epochs_list = []
+        self.X = None 
+        self.y = None
 
-    def load_and_preprocess(self):
-        # Empty lists to store the path for each subject
-        X_subjects = []
-        y_subjects = []
+    def load_subject_data(self, subject_id: int) -> Tuple[np.ndarray, np.ndarray]:
+        # Loading the raw data file for a single subject
+        paths = eegbci.load_data(subject_id, runs=self.runs, preload=self.preload, update_path=True)
+        raw = concatenate_raws([read_raw_edf(p, preload=True) for p in paths])
+        events, event_id = mne.events_from_annotations(raw, event_id=dict(T0=1, T1=2, T2=3))
 
-        for subject_id in self.subject_ids:
-            # Loading the raw data file for each subject's directory
-            raw, events, _ = eegbci.load_data(subject_id, runs=self.runs)
-            # Overview of 10-20 montage: https://soft-dynamics.de/pdf/Int1020Syst.pdf 
-            raw.set_montage(mne.channels.make_standard_montage('standard_1020'))
+        eegbci.standardize(raw)    
+        # 10-10 system used excluding Nz, F9/F10, ...
+        raw.set_montage(mne.channels.make_standard_montage('standard_1005'))
 
-            # Apply bandpass filter with values defined in init fct
-            raw.filter(l_freq=self.filter_freqs[0], h_freq=self.filter_freqs[1])
+        # Apply notch and high-pass filter (2nd needed for ICA)
+        raw.notch_filter(freqs=[60, 120])
+        raw_for_ica = raw.copy().filter(l_freq=4.0, h_freq=None)
+        # 4 Hz removes drift and blinks
 
-            # Apply ICA to remove artifacts, if necessary
-            ica = ICA(num_components=20, random_state=97)
-            ica.fit(raw)
-            ica.apply(raw)
+        # Apply ICA to filtered copy 
+        ica = ICA(n_components=0.99, random_state=42, method='fastica')
+        ica.fit(raw_for_ica)
 
-            # Epoching to get specific time windows of continuous temporal data
-            event_id = {"left": 2, "right": 3}
-            epochs = mne.Epochs(raw, events=events, event_id=event_id, 
-                                tmin=0, tmax=4, baseline=self.baseline, preload=self.preload)
-            self.epochs_list.append(epochs)
+        # Find and apply components to original raw data
+        # using frontal-polar electrodes closest to eyes 
+        # -> most sensitive to EOG signals
+        eog_ind = ica.find_bands_eog(raw, ch_name=['Fp1', 'Fp2'])
+        ica.exclude = eog_ind 
+        ica.apply(raw)
 
-            # raw EEG data for all epochs as NumPy array
-            X_subjects.append(epochs.get_data) # (n_epochs, n_channels, n_samples)
-            y_subjects.append(epochs.events[:, 2]) # 2nd column = event labels/IDs (our class we want to predict)
-            # third column in MNE is event_id since second column is filled with 0 and first is the sample
+        # Define event ID
+        event_id = {"left": 2, "right": 3}
 
-        # concatenate all data from subjects for training
-        X = np.concatenate(X_subjects, axis=0)
-        y = np.concatenate(y_subjects, axis=0)
+        # Epoching into 4 s windows
+        epochs = mne.Epochs(raw, events=events, event_id=event_id, 
+                                tmin=0.5, tmax=3.5, baseline=self.baseline, 
+                                preload=self.preload, reject=dict(eeg=150e-6), 
+                                flat=dict(eeg=1e-7))
 
-        # raw event IDs do not start at 0 which PyTorch classification losses expect 
-        # -> mapping to (0, 1) binary scale
-        label_map = {
-            2: 0,
-            3: 1
-        }
+        # Extract data and labels
+        X = epochs.get_data().astype(np.float32) * 1e6 # conversion to µV
+         # (n_epochs, n_channels, n_samples)
+        
+        # Normalize data by z-score normalization 
+        # Calculate mean and std across epoch and time dim per channel
+        mu = np.mean(X, axis=(0, 2), keepdims=True)
+        sd = np.std(X, axis=(0, 2), keepdims=True)
+        X = (X - mu) / (sd + 1e-8)
 
-        # define our target vector y
+        y = epochs.events[:, 2] # Event IDs from 3rd column (2 for left, 3 for right)
+
+        # Raw event IDs do not start at 0 which PyTorch classification losses expect 
+        # -> map to (0, 1) binary scale
+        label_map = {2: 0, 3: 1}
+
+        # Target vector y
         # T1 = 0 and T2 = 1
-        y = np.array([label_map[label] for label in epochs.events[:, -1]])
+        y = np.array([label_map[label] for label in y])
 
         return X, y
 
-    # knowing the number of elements in dataset
-    def __len__(self): # useful for splitting dataset into training and validation set or calculating metrics
-        return sum(len(epochs) for epochs in self.epochs_list)
+    def __len__(self):
+        # Return total number of samples
+        return len(self.X)
 
-    # allows to access elements of dataset by index like in standard array/list
     def __getitem__(self, idx):
-        for epochs in self.epochs_list:
-            if idx < len(epochs):
-                data = epochs.get_data()[idx]
-                label = epochs.events[epoch_idx][2] - 1
-                return data, label
-            idx -= len(epochs)
-        raise IndexError(f'Index {idx} is out of bounds')
+        # Access a single sample by index
+        return self.X[idx], self.y[idx]
 
-    # Function for plotting PSDs quickly etc. (may be delayed later)
-    def get_epoch(self, idx):
-        """Retrieve specific epoch and its label"""
-        total_len = 0
-        for i, epochs in enumerate(self.epochs_list):
-            if idx >= total_len and idx < total_len + len(epochs):
-                epoch_idx = idx - total_len
-                return self.epochs_list[i][epoch_idx]
-            total_len += len(epochs)
-        raise IndexError(f'Index {idx} is out of bounds')
+    def load_data(self) -> None:
+        # Load and process data for all subjects
+        self.X_subjects = []
+        self.y_subjects = []
+
+        for subject_id in self.subject_ids:
+            X, y = self.load_subject_data(subject_id)
+            self.X_subjects.append(X)
+            self.y_subjects.append(y)
+        
+        # Concatenate all data from subjects 
+        self.X = np.concatenate(self.X_subjects, axis=0)
+        self.y = np.concatenate(self.y_subjects, axis=0)
+
+        return self.X, self.y 
+        # (batch, channels, samples)
