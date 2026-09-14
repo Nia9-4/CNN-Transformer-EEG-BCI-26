@@ -5,8 +5,8 @@ import torch.nn as nn
 import math
 
 
-class PoorMLP(nn.Module):
-    """
+"""class PoorMLP(nn.Module):
+    
     A small and simple baseline model to compare the main model to
     
     Parameters:
@@ -14,7 +14,6 @@ class PoorMLP(nn.Module):
     - num_classes: Number of classes (2)
     - hidden_dim: Hidden dimension size of MLP
     - dropout: Dropout rate, here large since comp. expensive
-    """
 
     def __init__(self, in_dim, num_classes=2, hidden_dim=128, dropout=0.5) -> None:
         # EEG datasets small & noisy -> strong dropout suggested
@@ -36,7 +35,7 @@ class PoorMLP(nn.Module):
         x = self.dropout(x)
         x = self.layer_out(x)
         return x
-    
+    """
 
 # ======================================================
 # Baseline Model for comparisons and testing pipeline
@@ -183,7 +182,7 @@ class ResidualConnection(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        x += self.dropout(self.block(self.norm(x)))
+        x = x + self.dropout(self.block(self.norm(x)))
         return x
 
 

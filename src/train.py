@@ -146,29 +146,31 @@ def plot_metrics(history):
 # Training the models
 # =======================
 
-# Create train and test dataloaders
-train_loader, val_loader, test_loader = create_dataloaders(batch_size=32)
+# Only if explicitly called
+if __name__ == "__main__":
+    # Create train and test dataloaders
+    train_loader, val_loader, test_loader = create_dataloaders(batch_size=32)
 
-# Hyperparameters for poor sanity check MLP
-n_channels = 64
-n_samples = 4.5 * 160 # time_window * sampling_freq
-in_dim = n_channels * n_samples
-hidden_dim = 256
+    """# Hyperparameters for poor sanity check MLP
+    n_channels = 64
+    n_samples = int(4.5 * 160) # time_window * sampling_freq
+    in_dim = n_channels * n_samples
+    hidden_dim = 256"""
 
-# Initialize models and optimizers
-model_main = EEGClassifier()
-model_baseline = BaselineCNN()
-model_poormlp = PoorMLP(in_dim, hidden_dim)
+    # Initialize models and optimizers
+    model_main = EEGClassifier()
+    model_baseline = BaselineCNN()
+    # model_poormlp = PoorMLP(in_dim, hidden_dim)
 
-optimizer_main = optim.Adam(model_main.parameters(), lr=0.001, weight_decay=1e-4)
-optimizer_baseline = optim.Adam(model_baseline.parameters(), lr=0.001, weight_decay=1e-4)
-optimizer_poormlp = optim.Adam(model_poormlp.parameters(), lr=0.001, weight_decay=1e-4)
+    optimizer_main = optim.Adam(model_main.parameters(), lr=0.001, weight_decay=1e-4)
+    optimizer_baseline = optim.Adam(model_baseline.parameters(), lr=0.001, weight_decay=1e-4)
+    # optimizer_poormlp = optim.Adam(model_poormlp.parameters(), lr=0.001, weight_decay=1e-4)
 
-# Training loop for models
-trained_eegclassifier, main_history = train(model_main, 50, train_loader, val_loader, optimizer_main, device)
-trained_baseline, baseline_history = train(model_baseline, 50, train_loader, val_loader, optimizer_baseline, device)
-trained_poormlp, poor_history = train(model_poormlp, 50, train_loader, val_loader, optimizer_poormlp, device)
+    # Training loop for models
+    trained_eegclassifier, main_history = train(model_main, 50, train_loader, val_loader, optimizer_main, device)
+    trained_baseline, baseline_history = train(model_baseline, 50, train_loader, val_loader, optimizer_baseline, device)
+    # trained_poormlp, poor_history = train(model_poormlp, 50, train_loader, val_loader, optimizer_poormlp, device)
 
-plot_metrics(main_history)
-plot_metrics(baseline_history)
-plot_metrics(poor_history)
+    plot_metrics(main_history)
+    plot_metrics(baseline_history)
+    # plot_metrics(poor_history)
