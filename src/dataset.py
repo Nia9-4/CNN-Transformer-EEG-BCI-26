@@ -12,7 +12,6 @@ class PreprocessedDataset(Dataset):
     - subject_ids: List of subject IDs to load
     - runs: List of run numbers (e. g. [4] for left vs. right hand)
     - preload: Whether to load data into memory
-    - filter_freqs: Tuple of low and high frequency for bandpass filtering
     - baseline: Baseline correction
     """
     

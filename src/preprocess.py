@@ -6,7 +6,11 @@ from mne.preprocessing import ICA
 
 
 """A plotted analysis of the dataset can be found in a separate
-Jupyter notebook in the folder 'notebooks'"""
+Jupyter notebook in the folder 'notebooks'
+
+Due to the MNE library still depending on some NumPy1. functions but newer
+scipy commands, numpy=1.26.4 and scipy=1.12.0 are suggested for running 
+this code successfully in an environment."""
 
 # Dataset documentation: https://www.physionet.org/content/eegmmidb/1.0.0/
 # MNE: https://mne.tools/stable/generated/mne.datasets.eegbci.load_data.html
@@ -14,7 +18,7 @@ Jupyter notebook in the folder 'notebooks'"""
 
 def load_subject_data(subject_id, runs=[4, 8, 12], preload=True, baseline=None):
     # Loading the raw data file for a single subject
-    paths = eegbci.load_data(subject_id, runs=runs, preload=preload, update_path=True)
+    paths = eegbci.load_data(subject_id, runs=runs, update_path=True)
     raw = concatenate_raws([read_raw_edf(p, preload=True) for p in paths])
     events, event_id = mne.events_from_annotations(raw, event_id=dict(T0=1, T1=2, T2=3))
 
@@ -23,7 +27,7 @@ def load_subject_data(subject_id, runs=[4, 8, 12], preload=True, baseline=None):
     raw.set_montage(mne.channels.make_standard_montage('standard_1005'))
 
     # Apply notch and high-pass filter (2nd needed for ICA)
-    raw.notch_filter(freqs=[60, 120])
+    raw.notch_filter(freqs=[60]) # Nyquist freq 80 Hz (160/2)
     raw_for_ica = raw.copy().filter(l_freq=4.0, h_freq=None)
     # 4 Hz removes drift and blinks
 

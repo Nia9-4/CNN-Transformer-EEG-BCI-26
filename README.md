@@ -1,7 +1,15 @@
 # Decoding EEG-Based Movement Imagery (MI) using a CNN-Transformer
 _by Antonia Reul (2026)_
 
-This project attempts to develop a CNN-Transformer, combining scientific techniques which have proven highly useful in research the past couple of years, which can decode movement imagination from EEG data reliably and hence outperform other state-of-the-art models.
+This project attempts to develop a CNN-Transformer, combining scientific techniques which have proven highly useful in research the past couple of years, which can decode movement imagination from EEG data reliably.
+
+
+## Setup
+The MNE library, as well as other medical libraries, are still getting upgraded and sometimes use older code versions. To ensure the code works, the following installations are recommended:
+
+* python = 3.10 - MNE is more stable on it than on 3.12
+* numpy < 2.0 - MNE relies on a function which has been removed and renamed in NumPy2.0
+* scipy >= 1.11 
 
 ## Literature Background
 ##### Brain Computer Interfaces (BCIs)
