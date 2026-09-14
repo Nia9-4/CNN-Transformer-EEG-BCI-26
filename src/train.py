@@ -9,7 +9,6 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, LambdaLR
 from torch.utils.data import Dataset, DataLoader
 
 from model import PoorMLP, BaselineCNN, EEGClassifier
-from dataset import PreprocessedDataset
 from datamodule import create_dataloaders
 from evaluate import evaluate
 
@@ -146,16 +145,9 @@ def plot_metrics(history):
 # =======================
 # Training the models
 # =======================
-# Load data 
-X, y = load_data()
-
-sample, label = dataset[0]
-print(f"Sample shape: {sample.shape}, Label: {label}")
-X = torch.tensor(X, dtype=torch.float32)
-y = torch.tensor(y, dtype=torch.long)
 
 # Create train and test dataloaders
-train_loader, val_loader, test_loader = create_dataloaders(X, y)
+train_loader, val_loader, test_loader = create_dataloaders(batch_size=32)
 
 # Hyperparameters for poor sanity check MLP
 n_channels = 64
@@ -173,15 +165,10 @@ optimizer_baseline = optim.Adam(model_baseline.parameters(), lr=0.001, weight_de
 optimizer_poormlp = optim.Adam(model_poormlp.parameters(), lr=0.001, weight_decay=1e-4)
 
 # Training loop for models
-trained_eegclassifier, main_history = train(model=model_main, n_epochs=50, train_loader=train_loader, 
-                                    val_loader=val_loader, optimizer=optimizer_main, device=device)
-trained_baseline, baseline_history = train(model=model_baseline, n_epochs=50, train_loader=train_loader, 
-                                    val_loader=val_loader, optimizer=optimizer_baseline, device=device)
-trained_poormlp, poor_history = train(model=model_poormlp, n_epochs=50, train_loader=train_loader, 
-                                    val_loader=val_loader, optimizer=optimizer_poormlp, device=device)
+trained_eegclassifier, main_history = train(model_main, 50, train_loader, val_loader, optimizer_main, device)
+trained_baseline, baseline_history = train(model_baseline, 50, train_loader, val_loader, optimizer_baseline, device)
+trained_poormlp, poor_history = train(model_poormlp, 50, train_loader, val_loader, optimizer_poormlp, device)
 
 plot_metrics(main_history)
-
 plot_metrics(baseline_history)
-
 plot_metrics(poor_history)
