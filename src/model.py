@@ -13,10 +13,10 @@ class PoorMLP(nn.Module):
     - in_dim: Dimension of the input data
     - num_classes: Number of classes (2)
     - hidden_dim: Hidden dimension size of MLP
-    - dropout_rate: Dropout rate, here large since comp. expensive
+    - dropout: Dropout rate, here large since comp. expensive
     """
 
-    def __init__(self, in_dim, num_classes=2, hidden_dim=128, dropout_rate=0.5) -> None:
+    def __init__(self, in_dim, num_classes=2, hidden_dim=128, dropout=0.5) -> None:
         # EEG datasets small & noisy -> strong dropout suggested
         # 64 channels/electrodes -> 1:1 mapping
         super(PoorMLP, self).__init__()
@@ -25,7 +25,7 @@ class PoorMLP(nn.Module):
         self.layer_2 = nn.Linear(hidden_dim, hidden_dim // 2)
         # Enforce dense representations (hidden_dim // 2)
         self.layer_out = nn.Linear(hidden_dim // 2, num_classes)
-        self.dropout = nn.Dropout(dropout_rate)
+        self.dropout = nn.Dropout(dropout)
         self.elu = nn.ELU()
         
     def forward(self, x):
@@ -173,14 +173,14 @@ class ResidualConnection(nn.Module):
     Parameters:
     - block: Network the residual connection is applied to (e. g. feed forward block)
     - emb_dim: Embedding dimension
-    - dropout_rate: Dropout rate
+    - dropout: Dropout rate
     """
 
-    def __init__(self, block, emb_dim, dropout_rate=0.1):
+    def __init__(self, block, emb_dim, dropout=0.1):
         super(ResidualConnection, self).__init__()
         self.block = block
         self.norm = nn.LayerNorm(emb_dim)
-        self.dropout = nn.Dropout(dropout_rate)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
         x = self.norm(x + self.block(x))
@@ -195,17 +195,17 @@ class FeedForwardBlock(nn.Module):
     Parameters:
     - in_dim: Dimension of the input
     - exp_fct: Expansion factor, how much to expand hidden layer
-    - dropout_rate: Dropout rate
+    - dropout: Dropout rate
     """
 
-    def __init__(self, in_dim, exp_fct=4, dropout_rate=0.1):
+    def __init__(self, in_dim, exp_fct=4, dropout=0.1):
         super(FeedForwardBlock, self).__init__()
 
         hidden_dim = in_dim * exp_fct
 
         self.linear_in = nn.Linear(in_dim, hidden_dim)
         self.silu = nn.SiLU()
-        self.dropout = nn.Dropout(dropout_rate)
+        self.dropout = nn.Dropout(dropout)
         self.linear_out = nn.Linear(hidden_dim, in_dim)
 
     def forward(self, x):
@@ -221,9 +221,9 @@ class AttentionWrapper(nn.Module):
     Helper to wrap MultiheadAttention because MHA returns tuples
     but ResidualConnection expects a single tensor.
     """
-    def __init__(self, emb_dim, n_heads, dropout_rate):
+    def __init__(self, emb_dim, n_heads, dropout):
         super(AttentionWrapper, self).__init__()
-        self.mha = nn.MultiheadAttention(emb_dim, n_heads, dropout_rate, batch_first=True)
+        self.mha = nn.MultiheadAttention(emb_dim, n_heads, dropout, batch_first=True)
 
     def forward(self, x):
         # Only return the output tensor, not the attention weights
@@ -238,17 +238,17 @@ class EncoderBlock(nn.Module):
     Parameters:
     - emb_dim: Embedding dimension
     - n_heads: Number of heads for MHA
-    - dropout_rate: Dropout rate, 0.1 similar to Vaswani et al.
+    - dropout: Dropout rate, 0.1 similar to Vaswani et al.
     - expansion: Expansion rate
     """
 
-    def __init__(self, emb_dim, n_heads, dropout_rate=0.1, expansion=4):
+    def __init__(self, emb_dim, n_heads, dropout=0.1, expansion=4):
         super(EncoderBlock, self).__init__()
 
-        self.attention = AttentionWrapper(emb_dim, n_heads, dropout_rate)
-        self.ffn = FeedForwardBlock(emb_dim, expansion, dropout_rate)
-        self.residual1 = ResidualConnection(self.attention, emb_dim, dropout_rate)
-        self.residual2 = ResidualConnection(self.ffn, emb_dim, dropout_rate)
+        self.attention = AttentionWrapper(emb_dim, n_heads, dropout)
+        self.ffn = FeedForwardBlock(emb_dim, expansion, dropout)
+        self.residual1 = ResidualConnection(self.attention, emb_dim, dropout)
+        self.residual2 = ResidualConnection(self.ffn, emb_dim, dropout)
 
     def forward(self, x, mask=None):
         x = self.residual1(x)
@@ -262,11 +262,11 @@ class MLPClassifier(nn.Module):
     
     Parameters:
     - tr_out_dim: Dimension of transformer output (emb_dim)
-    - dropout_rate: Dropout rate
+    - dropout: Dropout rate
     - pooling_type: Pooling type, here 'avg'
     """
 
-    def __init__(self, tr_out_dim, dropout_rate=0.5, pooling_type='avg'):
+    def __init__(self, tr_out_dim, dropout=0.5, pooling_type='avg'):
         super(MLPClassifier, self).__init__()
         self.pooling_type = pooling_type
         input_dim = tr_out_dim
@@ -274,7 +274,7 @@ class MLPClassifier(nn.Module):
         self.linear_in = nn.Linear(input_dim, tr_out_dim // 2)
         self.linear_out = nn.Linear(tr_out_dim // 2, 1)
         self.elu = nn.ELU(True)
-        self.dropout = nn.Dropout(dropout_rate)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
         x = torch.mean(x, dim=1) # (batch, emb_dim)
@@ -299,17 +299,17 @@ class EEGClassifier(nn.Module):
     - emb_dim: Dimension of embeddings
     - max_patches: Max length of time sequences after CNN pooling
     - n_heads: Number of heads for multihead attention
-    - dropout_rate: Dropout rate
+    - dropout: Dropout rate
     - fs: Sampling rate of EEG data, for PhysioNet dataset 160 Hz
     """
 
-    def __init__(self, n_channels=64, emb_dim=128, max_patches=500, n_heads=4, dropout_rate=0.1, fs=160):
+    def __init__(self, n_channels=64, emb_dim=128, max_patches=500, n_heads=4, dropout=0.1, fs=160):
         super(EEGClassifier, self).__init__()
     
         self.cnn = CNN(n_channels=n_channels, emb_dim=emb_dim, fs=fs)
         self.positional_encoding = PositionalEncoding(emb_dim, max_patches) 
-        self.transformer = EncoderBlock(emb_dim, n_heads, dropout_rate)
-        self.mlp = MLPClassifier(tr_out_dim=emb_dim, dropout_rate, pooling_type='concat') # Assuming pooling reduces patches by half
+        self.transformer = EncoderBlock(emb_dim, n_heads, dropout)
+        self.mlp = MLPClassifier(tr_out_dim=emb_dim, pooling_type='concat') # Assuming pooling reduces patches by half
 
     def forward(self, x):
         """
