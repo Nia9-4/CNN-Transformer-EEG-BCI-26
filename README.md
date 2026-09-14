@@ -11,6 +11,9 @@ The MNE library, as well as other medical libraries, are still getting upgraded 
 * numpy < 2.0 - MNE relies on a function which has been removed and renamed in NumPy2.0
 * scipy >= 1.11 
 
+    Users are encouraged to ensure a proper running of the 'pipeline_test.ipynb' to make sure, the main code can be properly executed.
+    
+
 ## Literature Background
 ##### Brain Computer Interfaces (BCIs)
 Brain Computer Interfaces (BCIs) enable the control of external devices or systems solely through measured brain activity (Liao et al., 2025). BCIs can therefore be used for prosthetic limb operations or in stroke patient mobilization (Liao et al., 2025). A promising BCI application, which inspired this project, is an EEG-based BCI for limb movement based on movement imagination, for instance for patients with phantom limbs. 

@@ -18,40 +18,50 @@ this code successfully in an environment."""
 
 def load_subject_data(subject_id, runs=[4, 8, 12], preload=True, baseline=None):
     # Loading the raw data file for a single subject
+    print('Checkpoint 1: Loading EDF files')
     paths = eegbci.load_data(subject_id, runs=runs, update_path=True)
     raw = concatenate_raws([read_raw_edf(p, preload=True) for p in paths])
-    events, event_id = mne.events_from_annotations(raw, event_id=dict(T0=1, T1=2, T2=3))
 
+    print('Checkpoint 2: Annotations and Montage')
+    events, event_id = mne.events_from_annotations(raw, event_id=dict(T0=1, T1=2, T2=3))
     eegbci.standardize(raw)    
     # 10-10 system used excluding Nz, F9/F10, ...
     raw.set_montage(mne.channels.make_standard_montage('standard_1005'))
 
     # Apply notch and high-pass filter (2nd needed for ICA)
+    print('Checkpoint 3: Filtering')
     raw.notch_filter(freqs=[60]) # Nyquist freq 80 Hz (160/2)
     raw_for_ica = raw.copy().filter(l_freq=4.0, h_freq=None)
     # 4 Hz removes drift and blinks
 
     # Apply ICA to filtered copy 
+    print('Checkpoint 4: Starting ICA')
     ica = ICA(n_components=0.99, random_state=42, method='fastica')
     ica.fit(raw_for_ica)
 
     # Find and apply components to original raw data
     # using frontal-polar electrodes closest to eyes 
     # -> most sensitive to EOG signals
-    eog_ind = ica.find_bands_eog(raw, ch_name=['Fp1', 'Fp2'])
-    ica.exclude = eog_ind 
-    ica.apply(raw)
+    eog_ind = ica.find_bads_eog(raw, ch_name=['Fp1', 'Fp2'])
+    # Debugging case if MNE returns list in list
+    if isinstance(eog_ind, list) and len(eog_ind) > 0 and isinstance(eog_ind[0], list):
+        eog_ind = eog_ind[0]
+    eog_ind = eog_ind[0]
+
+    ica.apply(raw, exclude=set(eog_ind))
 
     # Define event ID
+    print('Checkpoint 5: Epoching...')
     event_id = {"left": 2, "right": 3}
 
     # Epoching into 4 s windows
     epochs = mne.Epochs(raw, events=events, event_id=event_id, 
-                                tmin=0.5, tmax=3.5, baseline=self.baseline, 
-                                preload=self.preload, reject=dict(eeg=150e-6), 
+                                tmin=0.5, tmax=3.5, baseline=baseline, 
+                                preload=preload, reject=dict(eeg=1000e-6), 
                                 flat=dict(eeg=1e-7))
 
     # Extract data and labels
+    print('Checkpoint 6: Finalizing data')
     X = epochs.get_data().astype(np.float32) * 1e6 # conversion to µV
     # (n_epochs, n_channels, n_samples)
         
