@@ -1,8 +1,9 @@
 import numpy as np
-import math
+import matplotlib.pyplot as plt
+import seaborn as sns
 import torch
 import torch.nn as nn
-from sklearn.metrics import cohen_kappa_score
+from sklearn.metrics import cohen_kappa_score, confusion_matrix
 
 seed = 42
 torch.manual_seed(seed)
@@ -12,8 +13,8 @@ np.random.seed(seed)
 def evaluate(model, val_loader, criterion, device):
     model.eval() # disable dropout and batchnorm
     val_loss, val_correct, val_total = 0.0, 0, 0
-    val_preds, val_targets = [], []
-    
+    all_preds, all_targets = [], []
+
     with torch.no_grad():
         for batch_X, batch_y in val_loader:
             batch_X, batch_y = batch_X.to(device), batch_y.to(device).float().view(-1)
@@ -25,11 +26,51 @@ def evaluate(model, val_loader, criterion, device):
             predicted_classes = (torch.sigmoid(pred) > 0.5).int()
             val_correct += (predicted_classes == batch_y).sum().item()
             val_total += batch_y.size(0)
-            val_preds.extend(predicted_classes.cpu().numpy())
-            val_targets.extend(batch_y.cpu().numpy())
+
+            all_preds.extend(predicted_classes.cpu().numpy())
+            all_targets.extend(batch_y.cpu().numpy())
+
+    epoch_kappa = cohen_kappa_score(all_targets, all_preds)
 
     return {
         'loss': val_loss / len(val_loader),
         'acc': 100 * val_correct / val_total,
-        'kappa': cohen_kappa_score(val_targets, val_preds)
+        'kappa': epoch_kappa
     }
+
+
+def get_predictions(model, test_loader, device):
+    """Collects all true labels and predictions"""
+    model.eval()
+    all_preds, all_targets = [], []
+
+    with torch.no_grad():
+        for batch_X, batch_y in test_loader:
+            batch_X, batch_y = batch_X.to(device), batch_y.to(device).float().view(-1)
+            pred = model(batch_X)
+        
+            predicted_classes = (torch.sigmoid(pred) > 0.5).int()
+            all_preds.extend(predicted_classes.cpu().numpy())
+            all_targets.extend(batch_y.cpu().numpy())
+
+    return np.array(all_targets), np.array(all_preds)
+
+
+def visualize_predictions(y_true, y_pred):
+    """Visualize prediction accuracy with confusion matrices"""
+
+    unique, counts = np.unique(y_pred, return_counts=True)
+    print("Prediction Distribution:")
+    print(dict(zip(unique, counts)))
+
+    kappa = cohen_kappa_score(y_true, y_pred)
+    print(f"Cohen's Kappa: {kappa:.4f}")
+
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(5, 4))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                    xticklabels=['Left', 'Right'], yticklabels=['Left', 'Right'])
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.title('Confusion Matrix')
+    plt.show()
