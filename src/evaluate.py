@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
@@ -66,11 +64,8 @@ def get_predictions(model, test_loader, device):
     return np.array(all_targets), np.array(all_preds)
 
 
-def visualize_predictions(y_true, y_pred, model_name="model"):
+def visualize_predictions(y_true, y_pred, model_name="model", save=False):
     """Visualize prediction accuracy with confusion matrices"""
-
-    plot_dir = os.path.join(PROJECT_ROOT, 'results', 'plots')
-    os.makedirs(plot_dir, exist_ok=True)
 
     unique, counts = np.unique(y_pred, return_counts=True)
     print("Prediction Distribution:")
@@ -88,10 +83,13 @@ def visualize_predictions(y_true, y_pred, model_name="model"):
     plt.ylabel('True')
     plt.title(f'Confusion Matrix: {model_name}')
 
-    filename = f"{model_name}_confusion_matrix.png"
-    save_path = os.path.join(plot_dir, filename)
-
-    plt.savefig(save_path)
-    plt.show()
-    print(f"Confusion matrix saved to: {save_path}")
-    plt.close()
+    if save:
+        plot_dir = os.path.join(PROJECT_ROOT, 'results', 'plots')
+        os.makedirs(plot_dir, exist_ok=True)
+        filename = f"{model_name}_confusion_matrix.png"
+        save_path = os.path.join(plot_dir, filename)
+        plt.savefig(save_path)
+        print(f"Confusion matrix saved to: {save_path}")
+        plt.close()
+    else:
+        plt.show()

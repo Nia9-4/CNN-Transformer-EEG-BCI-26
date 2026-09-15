@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import torch
 import os
@@ -141,9 +139,7 @@ def train(model, n_epochs, train_loader, val_loader, optimizer, device, model_na
 # Function to plot metrics
 # =========================
 
-def plot_metrics(history, model_name="model"):
-    plot_dir = os.path.join(PROJECT_ROOT, 'results', 'plots')
-    os.makedirs(plot_dir, exist_ok=True)
+def plot_metrics(history, model_name="model", save=False):
 
     epochs = range(1, len(history['train_loss']) + 1)
 
@@ -162,14 +158,20 @@ def plot_metrics(history, model_name="model"):
     plt.xlabel('Epochs')
     plt.legend()
 
-    plt.tight_layout()
-    filename = f"{model_name}_loss_curve.png"
-    save_path = os.path.join(plot_dir, filename)
-    plt.savefig(save_path)
-    print(f"Plot saved to: {save_path}")
-    plt.show()
-    plt.close()
 
+    plt.tight_layout()
+
+    if save:
+        plot_dir = os.path.join(PROJECT_ROOT, 'results', 'plots')
+        os.makedirs(plot_dir, exist_ok=True)
+        filename = f"{model_name}_loss_curve.png"
+        save_path = os.path.join(plot_dir, filename)
+        plt.savefig(save_path)
+        print(f"Plot saved to: {save_path}")
+        plt.close()
+    else:
+        plt.show()
+        
 
 # =======================
 # Training the models
@@ -214,11 +216,11 @@ if __name__ == "__main__":
                 device=device,
                 model_name="baseline_cnn")
 
-            plot_metrics(baseline_history, model_name="baseline_cnn")
-            plot_metrics(main_history, model_name="main")
+            plot_metrics(baseline_history, model_name="baseline_cnn", save=True)
+            plot_metrics(main_history, model_name="main", save=True)
 
             y_true_baseline, y_pred_baseline = get_predictions(trained_baseline, test_loader, device)
-            visualize_predictions(y_true_baseline, y_pred_baseline, model_name="baseline_cnn")
+            visualize_predictions(y_true_baseline, y_pred_baseline, model_name="baseline_cnn", save=True)
 
             y_true_main, y_pred_main = get_predictions(trained_main, test_loader, device)
-            visualize_predictions(y_true_main, y_pred_main, model_name="main")
+            visualize_predictions(y_true_main, y_pred_main, model_name="main", save=True)
