@@ -66,7 +66,7 @@ def get_predictions(model, test_loader, device):
     return np.array(all_targets), np.array(all_preds)
 
 
-def visualize_predictions(y_true, y_pred):
+def visualize_predictions(y_true, y_pred, model_name="model"):
     """Visualize prediction accuracy with confusion matrices"""
 
     plot_dir = os.path.join(PROJECT_ROOT, 'results', 'plots')
@@ -80,12 +80,18 @@ def visualize_predictions(y_true, y_pred):
     print(f"Cohen's Kappa: {kappa:.4f}")
 
     cm = confusion_matrix(y_true, y_pred)
+
     plt.figure(figsize=(5, 4))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
                     xticklabels=['Left', 'Right'], yticklabels=['Left', 'Right'])
     plt.xlabel('Predicted')
     plt.ylabel('True')
-    plt.title('Confusion Matrix')
-    plt.tight_layout()
+    plt.title(f'Confusion Matrix: {model_name}')
+
+    filename = f"{model_name}_confusion_matrix.png"
+    save_path = os.path.join(plot_dir, filename)
+
+    plt.savefig(save_path)
     plt.show()
-    plt.savefig(os.path.join(plot_dir, 'confusion_matrix.png'))
+    print(f"Confusion matrix saved to: {save_path}")
+    plt.close()

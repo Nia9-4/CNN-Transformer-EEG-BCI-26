@@ -10,7 +10,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, LambdaLR
 
 from model import BaselineCNN, EEGClassifier
 from datamodule import create_dataloaders
-from evaluate import evaluate
+from evaluate import evaluate, get_predictions, visualize_predictions
 
 seed = 42
 torch.manual_seed(seed)
@@ -141,7 +141,7 @@ def train(model, n_epochs, train_loader, val_loader, optimizer, device, model_na
 # Function to plot metrics
 # =========================
 
-def plot_metrics(history):
+def plot_metrics(history, model_name="model"):
     plot_dir = os.path.join(PROJECT_ROOT, 'results', 'plots')
     os.makedirs(plot_dir, exist_ok=True)
 
@@ -163,8 +163,12 @@ def plot_metrics(history):
     plt.legend()
 
     plt.tight_layout()
-    plt.savefig(os.path.join(plot_dir, 'loss_curve.png'))
+    filename = f"{model_name}_loss_curve.png"
+    save_path = os.path.join(plot_dir, filename)
+    plt.savefig(save_path)
+    print(f"Plot saved to: {save_path}")
     plt.show()
+    plt.close()
 
 
 # =======================
@@ -173,40 +177,48 @@ def plot_metrics(history):
 
 # Only if explicitly called
 if __name__ == "__main__":
-    # Create train and test dataloaders
-    train_loader, val_loader, test_loader = create_dataloaders(batch_size=32)
+    # Hyperparameter test grid
+    lrs = [0.001, 0.005, 0.0001]
+    batch_sizes = [16, 32]
 
-    """# Hyperparameters for poor sanity check MLP
-    n_channels = 64
-    n_samples = int(4.5 * 160) # time_window * sampling_freq
-    in_dim = n_channels * n_samples
-    hidden_dim = 256"""
+    for lr in lrs:
+        for bs in batch_sizes:
+            print(f"Starting run: LR={lr}, BS={bs}")
 
-    # Initialize models and optimizers
-    model_main = EEGClassifier()
-    model_baseline = BaselineCNN()
+            # Create train and test dataloaders
+            train_loader, val_loader, test_loader = create_dataloaders(batch_size=bs)
 
-    optimizer_main = optim.Adam(model_main.parameters(), lr=0.0005, weight_decay=1e-4)
-    optimizer_baseline = optim.Adam(model_baseline.parameters(), lr=0.0005, weight_decay=1e-4)
+            # Initialize models and optimizers
+            model_main = EEGClassifier()
+            model_baseline = BaselineCNN()
 
-    # Training loop for models
-    trained_eegclassifier, main_history = train(
-        model=model_main, 
-        n_epochs=50, 
-        train_loader=train_loader, 
-        val_loader=val_loader, 
-        optimizer=optimizer_main, 
-        device=device,
-        model_name="eegclassifier")
+            optimizer_main = optim.Adam(model_main.parameters(), lr=lr, weight_decay=1e-4)
+            optimizer_baseline = optim.Adam(model_baseline.parameters(), lr=lr, weight_decay=1e-4)
 
-    trained_baseline, baseline_history = train(
-        model=model_baseline, 
-        n_epochs=50, 
-        train_loader=train_loader, 
-        val_loader=val_loader, 
-        optimizer=optimizer_baseline, 
-        device=device,
-        model_name="baseline_cnn")
+            # Training loop for models
+            trained_main, main_history = train(
+                model=model_main, 
+                n_epochs=50, 
+                train_loader=train_loader, 
+                val_loader=val_loader, 
+                optimizer=optimizer_main, 
+                device=device,
+                model_name="main")
 
-    plot_metrics(main_history)
-    plot_metrics(baseline_history)
+            trained_baseline, baseline_history = train(
+                model=model_baseline, 
+                n_epochs=50, 
+                train_loader=train_loader, 
+                val_loader=val_loader, 
+                optimizer=optimizer_baseline, 
+                device=device,
+                model_name="baseline_cnn")
+
+            plot_metrics(baseline_history, model_name="baseline_cnn")
+            plot_metrics(main_history, model_name="main")
+
+            y_true_baseline, y_pred_baseline = get_predictions(trained_baseline, test_loader, device)
+            visualize_predictions(y_true_baseline, y_pred_baseline, model_name="baseline_cnn")
+
+            y_true_main, y_pred_main = get_predictions(trained_main, test_loader, device)
+            visualize_predictions(y_true_main, y_pred_main, model_name="main")
