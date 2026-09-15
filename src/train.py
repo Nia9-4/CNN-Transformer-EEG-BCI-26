@@ -1,14 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import mne 
-import math
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import CosineAnnealingLR, LambdaLR
-from torch.utils.data import Dataset, DataLoader
 
-from model import PoorMLP, BaselineCNN, EEGClassifier
+from model import BaselineCNN, EEGClassifier
 from datamodule import create_dataloaders
 from evaluate import evaluate
 
