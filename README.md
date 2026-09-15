@@ -1,9 +1,9 @@
 # Decoding EEG-Based Movement Imagery (MI) using a CNN-Transformer
-_by Antonia Reul (2026)_
+_by Antonia Reul (2026)_ | Contact: areul@uni-osnabrueck.de
 
 This project attempts to develop a CNN-Transformer, combining scientific techniques which have proven highly useful in research the past couple of years, which can decode movement imagination from EEG data reliably.
 
-Please see the PDF 'decoding_eeg_movement_imagery.pdf' for a full report on architectural and parameter choices. Interested readers can also contact me via email areul@uni-osnabrueck.de for further questions or recommendations.
+Please see the PDF **'decoding_eeg_movement_imagery.pdf'** for a **full report on architectural and parameter choices**. 
 
 ## Setup
 The MNE library, as well as other medical libraries, are still getting upgraded and unfortunately sometimes still rely on old code. To ensure that the code works, the following installations are recommended:
