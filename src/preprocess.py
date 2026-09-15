@@ -1,5 +1,6 @@
 import numpy as np
 import mne 
+import os
 from mne.io import concatenate_raws, read_raw_edf
 from mne.datasets import eegbci
 from mne.preprocessing import ICA
@@ -86,6 +87,9 @@ def load_subject_data(subject_id, runs=[4, 8, 12], preload=True, baseline=None):
 
 
 def run_preprocessing():
+    processed_dir = 'data/processed'
+    os.makedirs(processed_dir, exist_ok=True)
+
     BAD = {88, 89, 92, 100}
     subject_ids = [s for s in range(1, 110) if s not in BAD] 
 
@@ -99,10 +103,10 @@ def run_preprocessing():
     X = np.concatenate(X_all, axis=0)
     y = np.concatenate(y_all, axis=0)
 
-    np.save('eeg_X_preprocessed.npy', X)
-    np.save('eeg_y_preprocessed.npy', y)
+    np.save(os.path.join(processed_dir, 'eeg_X_processed.npy'), X)
+    np.save(os.path.join(processed_dir, 'eeg_y_processed.npy'), y)
 
-    print("Success! Data (X and y) saved as 'eeg_X_preprocessed.npy' and 'eeg_y_preprocessed.npy")
+    print(f"Finished! 'eeg_X_processed.npy' and 'eeg_y_processed.npy' saved to {processed_dir}")
 
-    if __name__ == "__main__":
-        run_preprocessing()
+if __name__ == "__main__":
+    run_preprocessing()

@@ -1,0 +1,6 @@
+*.ipynb
+data/
+logs/
+*.npy
+*.pth
+.DS_Store

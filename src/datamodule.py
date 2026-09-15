@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Subset
 
@@ -9,8 +10,14 @@ def create_dataloaders(batch_size):
     """
     Create data loaders to organize the data into small batches
     """
-    X = np.load('eeg_X_preprocessed.npy')
-    y = np.load('eeg_y_preprocessed.npy')
+
+    processed_dir = 'data/processed'
+
+    try:
+        X = np.load(os.path.join(processed_dir, 'eeg_X_processed.npy'))
+        y = np.load(os.path.join(processed_dir, 'eeg_y_processed.npy'))
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Processed files not found in {processed_dir}. Please run preprocess.py first!")
 
     full_dataset = PreprocessedDataset(X, y)
     BAD = {88, 89, 92, 100}
