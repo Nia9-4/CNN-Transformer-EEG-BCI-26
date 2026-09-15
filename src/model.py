@@ -42,7 +42,7 @@ import math
 # ======================================================
 
 class BaselineCNN(nn.Module):
-    def __init__(self, num_classes=2):
+    def __init__(self, num_classes=1):
         super(BaselineCNN, self).__init__()
 
         self.conv1 = nn.Conv1d(in_channels=64, out_channels=16, kernel_size=25)
@@ -54,7 +54,7 @@ class BaselineCNN(nn.Module):
         x = self.elu(self.conv1(x)) # (batch, 16, samples-24)
         x = self.pool(x).squeeze(-1) # (batch, 16)
         x = self.fc(x)               # (batch, 2)
-        return x
+        return x.squeeze(-1)
 
 
 # ====
