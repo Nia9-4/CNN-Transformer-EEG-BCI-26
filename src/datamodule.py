@@ -10,6 +10,9 @@ try:
     PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 except NameError:
     PROJECT_ROOT = os.getcwd()
+    
+if os.path.basename(PROJECT_ROOT) == 'src':
+    PROJECT_ROOT = os.path.abspath(os.path.join(PROJECT_ROOT, '..'))
 
 print(f"Project Root identified as: {PROJECT_ROOT}")
 
@@ -29,11 +32,10 @@ def create_dataloaders(batch_size):
         raise FileNotFoundError(f"Processed files not found in {processed_dir}. Please run preprocess.py first!")
 
     full_dataset = PreprocessedDataset(X, y)
-    BAD = {88, 89, 92, 100}
-    all_subjects = list(s for s in range(len(X)) if s not in BAD)
+    indices = np.arange(len(X))
 
     # 80 % of subjects used for training, 20 % for testing
-    train_val_subjects, test_subjects = train_test_split(all_subjects, test_size=0.2, random_state=42)
+    train_val_subjects, test_subjects = train_test_split(indices, test_size=0.2, random_state=42)
 
     # 70 % of subjects used for training, 10 % for validation during training
     train_subjects, val_subjects = train_test_split(train_val_subjects, test_size=0.125, random_state=42)

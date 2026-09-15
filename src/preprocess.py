@@ -11,6 +11,9 @@ try:
 except NameError:
     PROJECT_ROOT = os.getcwd()
 
+if os.path.basename(PROJECT_ROOT) == 'src':
+    PROJECT_ROOT = os.path.abspath(os.path.join(PROJECT_ROOT, '..'))
+
 print(f"Project Root identified as: {PROJECT_ROOT}")
 
 

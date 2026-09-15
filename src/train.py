@@ -163,8 +163,8 @@ def plot_metrics(history):
     plt.legend()
 
     plt.tight_layout()
-    plt.show()
     plt.savefig(os.path.join(plot_dir, 'loss_curve.png'))
+    plt.show()
 
 
 # =======================
@@ -186,8 +186,8 @@ if __name__ == "__main__":
     model_main = EEGClassifier()
     model_baseline = BaselineCNN()
 
-    optimizer_main = optim.Adam(model_main.parameters(), lr=0.001, weight_decay=1e-4)
-    optimizer_baseline = optim.Adam(model_baseline.parameters(), lr=0.001, weight_decay=1e-4)
+    optimizer_main = optim.Adam(model_main.parameters(), lr=0.0005, weight_decay=1e-4)
+    optimizer_baseline = optim.Adam(model_baseline.parameters(), lr=0.0005, weight_decay=1e-4)
 
     # Training loop for models
     trained_eegclassifier, main_history = train(
