@@ -6,6 +6,13 @@ from mne.datasets import eegbci
 from mne.preprocessing import ICA
 from typing import Tuple
 
+try:
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+except NameError:
+    PROJECT_ROOT = os.getcwd()
+
+print(f"Project Root identified as: {PROJECT_ROOT}")
+
 
 """A plotted analysis of the dataset can be found in a separate
 Jupyter notebook in the folder 'notebooks'
@@ -88,7 +95,15 @@ def load_subject_data(subject_id, runs=[4, 8, 12], preload=True, baseline=None) 
 
 
 def run_preprocessing():
-    processed_dir = 'data/processed'
+    processed_dir = os.path.join(PROJECT_ROOT, 'data', 'processed')
+    x_path = os.path.join(processed_dir, 'eeg_X_processed.npy')
+    y_path = os.path.join(processed_dir, 'eeg_y_processed.npy')
+
+    if os.path.exists(x_path) and os.path.exists(y_path):
+        print("Processed data already exists. Skipping preprocessing to save time.")
+        return
+    
+    print("Processed data not found. Starting full preprocessing pipeline.")
     os.makedirs(processed_dir, exist_ok=True)
 
     BAD = {88, 89, 92, 100}

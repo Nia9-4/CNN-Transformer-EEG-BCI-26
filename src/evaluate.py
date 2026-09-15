@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 import torch
 import torch.nn as nn
 from sklearn.metrics import cohen_kappa_score, confusion_matrix
@@ -59,6 +60,9 @@ def get_predictions(model, test_loader, device):
 def visualize_predictions(y_true, y_pred):
     """Visualize prediction accuracy with confusion matrices"""
 
+    plot_dir = 'results/plots'
+    os.makedirs(plot_dir, exist_ok=True)
+
     unique, counts = np.unique(y_pred, return_counts=True)
     print("Prediction Distribution:")
     print(dict(zip(unique, counts)))
@@ -75,4 +79,4 @@ def visualize_predictions(y_true, y_pred):
     plt.title('Confusion Matrix')
     plt.tight_layout()
     plt.show()
-    plt.savefig('confusion_matrix.png')
+    plt.savefig(os.path.join(plot_dir, 'confusion_matrix.png'))

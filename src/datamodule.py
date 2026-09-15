@@ -5,17 +5,26 @@ from torch.utils.data import DataLoader, Subset
 
 from dataset import PreprocessedDataset
 
+# Ensure project runs on HPCs and with ipynb test
+try:
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+except NameError:
+    PROJECT_ROOT = os.getcwd()
+
+print(f"Project Root identified as: {PROJECT_ROOT}")
+
 
 def create_dataloaders(batch_size):
     """
     Create data loaders to organize the data into small batches
     """
 
-    processed_dir = 'data/processed'
+    processed_dir = os.path.join(PROJECT_ROOT, 'data', 'processed')
 
     try:
         X = np.load(os.path.join(processed_dir, 'eeg_X_processed.npy'))
         y = np.load(os.path.join(processed_dir, 'eeg_y_processed.npy'))
+        
     except FileNotFoundError:
         raise FileNotFoundError(f"Processed files not found in {processed_dir}. Please run preprocess.py first!")
 

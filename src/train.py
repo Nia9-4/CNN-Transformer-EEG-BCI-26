@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
+import os
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import CosineAnnealingLR, LambdaLR
@@ -20,12 +21,22 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 torch.use_deterministic_algorithms(True, warn_only=True)
 
+try:
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+except NameError:
+    PROJECT_ROOT = os.getcwd()
+
+print(f"Project Root identified as: {PROJECT_ROOT}")
+
 
 # ========================
 # Function to train model
 # ========================
 
 def train(model, n_epochs, train_loader, val_loader, optimizer, device):
+    model_dir = os.path.join(PROJECT_ROOT, 'results', 'models')
+    os.makedirs(model_dir, exist_ok=True)
+
     model.to(device)
     criterion = nn.BCEWithLogitsLoss()  
 
@@ -100,7 +111,10 @@ def train(model, n_epochs, train_loader, val_loader, optimizer, device):
         if metrics['kappa'] > best_kappa:
             best_kappa = metrics['kappa']
             patience_counter = 0
-            torch.save(model.state_dict(), 'best_model.pth')
+
+            # create a dynamic filename
+            save_path = os.path.join(model_dir, 'best_model.pth')
+            torch.save(model.state_dict(), os.path.join(model_dir, 'best_model.pth'))
 
         else:
             patience_counter += 1
@@ -118,6 +132,9 @@ def train(model, n_epochs, train_loader, val_loader, optimizer, device):
 # =========================
 
 def plot_metrics(history):
+    plot_dir = os.path.join(PROJECT_ROOT, 'results', 'plots')
+    os.makedirs(plot_dir, exist_ok=True)
+
     epochs = range(1, len(history['train_loss']) + 1)
 
     plt.figure(figsize=(12, 4))
@@ -137,7 +154,7 @@ def plot_metrics(history):
 
     plt.tight_layout()
     plt.show()
-    plt.savefig('training_curves.png')
+    plt.savefig(os.path.join(plot_dir, 'loss_curve.png'))
 
 
 # =======================
