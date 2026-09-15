@@ -137,6 +137,7 @@ def plot_metrics(history):
 
     plt.tight_layout()
     plt.show()
+    plt.savefig('training_curves.png')
 
 
 # =======================

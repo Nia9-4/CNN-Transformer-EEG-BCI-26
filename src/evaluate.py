@@ -73,4 +73,6 @@ def visualize_predictions(y_true, y_pred):
     plt.xlabel('Predicted')
     plt.ylabel('True')
     plt.title('Confusion Matrix')
+    plt.tight_layout()
     plt.show()
+    plt.savefig('confusion_matrix.png')
