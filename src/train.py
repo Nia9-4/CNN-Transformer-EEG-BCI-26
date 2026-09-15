@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import torch
 import os
@@ -33,9 +35,18 @@ print(f"Project Root identified as: {PROJECT_ROOT}")
 # Function to train model
 # ========================
 
-def train(model, n_epochs, train_loader, val_loader, optimizer, device):
+def train(model, n_epochs, train_loader, val_loader, optimizer, device, model_name="model"):
+
+    # Extract parameters for model run name 
+    current_lr = optimizer.param_groups[0]['lr']
+    current_bs = train_loader.batch_size
+
+    run_name = f"model_name_lr{current_lr}_bs{current_bs}"
+
+    # Path setup
     model_dir = os.path.join(PROJECT_ROOT, 'results', 'models')
     os.makedirs(model_dir, exist_ok=True)
+    save_path = os.path.join(model_dir, f"best_{run_name}.pth")
 
     model.to(device)
     criterion = nn.BCEWithLogitsLoss()  
@@ -112,9 +123,8 @@ def train(model, n_epochs, train_loader, val_loader, optimizer, device):
             best_kappa = metrics['kappa']
             patience_counter = 0
 
-            # create a dynamic filename
-            save_path = os.path.join(model_dir, 'best_model.pth')
-            torch.save(model.state_dict(), os.path.join(model_dir, 'best_model.pth'))
+            torch.save(model.state_dict(), save_path)
+            print(f"Saved best model to: {save_path}")
 
         else:
             patience_counter += 1
@@ -122,8 +132,8 @@ def train(model, n_epochs, train_loader, val_loader, optimizer, device):
         if patience_counter >= patience:
             print(f"Early stopping triggered at epoch {epoch+1}. Best Kappa: {best_kappa:.4f}")
             break
-        
-    model.load_state_dict(torch.load('best_model.pth'))
+
+    model.load_state_dict(torch.load(save_path))
     return model, history
 
 
@@ -175,17 +185,28 @@ if __name__ == "__main__":
     # Initialize models and optimizers
     model_main = EEGClassifier()
     model_baseline = BaselineCNN()
-    # model_poormlp = PoorMLP(in_dim, hidden_dim)
 
     optimizer_main = optim.Adam(model_main.parameters(), lr=0.001, weight_decay=1e-4)
     optimizer_baseline = optim.Adam(model_baseline.parameters(), lr=0.001, weight_decay=1e-4)
-    # optimizer_poormlp = optim.Adam(model_poormlp.parameters(), lr=0.001, weight_decay=1e-4)
 
     # Training loop for models
-    trained_eegclassifier, main_history = train(model_main, 50, train_loader, val_loader, optimizer_main, device)
-    trained_baseline, baseline_history = train(model_baseline, 50, train_loader, val_loader, optimizer_baseline, device)
-    # trained_poormlp, poor_history = train(model_poormlp, 50, train_loader, val_loader, optimizer_poormlp, device)
+    trained_eegclassifier, main_history = train(
+        model=model_main, 
+        n_epochs=50, 
+        train_loader=train_loader, 
+        val_loader=val_loader, 
+        optimizer=optimizer_main, 
+        device=device,
+        model_name="eegclassifier")
+
+    trained_baseline, baseline_history = train(
+        model=model_baseline, 
+        n_epochs=50, 
+        train_loader=train_loader, 
+        val_loader=val_loader, 
+        optimizer=optimizer_baseline, 
+        device=device,
+        model_name="baseline_cnn")
 
     plot_metrics(main_history)
     plot_metrics(baseline_history)
-    # plot_metrics(poor_history)

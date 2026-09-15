@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
@@ -9,6 +11,13 @@ from sklearn.metrics import cohen_kappa_score, confusion_matrix
 seed = 42
 torch.manual_seed(seed)
 np.random.seed(seed)
+
+try:
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+except NameError:
+    PROJECT_ROOT = os.getcwd()
+
+print(f"Project Root identified as: {PROJECT_ROOT}")
 
 
 def evaluate(model, val_loader, criterion, device):
@@ -60,7 +69,7 @@ def get_predictions(model, test_loader, device):
 def visualize_predictions(y_true, y_pred):
     """Visualize prediction accuracy with confusion matrices"""
 
-    plot_dir = 'results/plots'
+    plot_dir = os.path.join(PROJECT_ROOT, 'results', 'plots')
     os.makedirs(plot_dir, exist_ok=True)
 
     unique, counts = np.unique(y_pred, return_counts=True)
