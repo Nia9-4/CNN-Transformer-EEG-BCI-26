@@ -12,7 +12,7 @@ The MNE library, as well as other medical libraries, are still getting upgraded 
 * numpy < 2.0 - MNE relies on a function which has been removed and renamed in NumPy2.0
 * scipy >= 1.11 
 
-    Users are encouraged to ensure a proper running of the 'pipeline_test.ipynb' to make sure, the main code can be properly executed.
+        Users are encouraged to ensure a proper running of the 'pipeline_test.ipynb' to make sure, the main code can be properly executed.
 
 
 _The original idea of this project was to build on Ma et al. (2022) and Liao et al. (2025), but inspiration from further recent scientific papers and publications has been drawn as well._
