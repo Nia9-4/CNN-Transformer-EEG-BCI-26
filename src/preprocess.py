@@ -4,6 +4,7 @@ import os
 from mne.io import concatenate_raws, read_raw_edf
 from mne.datasets import eegbci
 from mne.preprocessing import ICA
+from typing import Tuple
 
 
 """A plotted analysis of the dataset can be found in a separate
@@ -17,10 +18,10 @@ this code successfully in an environment."""
 # MNE: https://mne.tools/stable/generated/mne.datasets.eegbci.load_data.html
 
 
-def load_subject_data(subject_id, runs=[4, 8, 12], preload=True, baseline=None):
+def load_subject_data(subject_id, runs=[4, 8, 12], preload=True, baseline=None) -> Tuple[np.ndarray, np.ndarray]:
     # Loading the raw data file for a single subject
     print('Checkpoint 1: Loading EDF files')
-    paths = eegbci.load_data(subject_id, runs=runs, update_path=True)
+    paths = eegbci.load_data(subject_id, runs=runs, update_path=False)
     raw = concatenate_raws([read_raw_edf(p, preload=True) for p in paths])
 
     print('Checkpoint 2: Annotations and Montage')
@@ -96,9 +97,12 @@ def run_preprocessing():
     X_all, y_all = [], []
     for s in subject_ids:
         print(f"Processing subject {s}...")
-        X, y = load_subject_data(s)
-        X_all.append(X)
-        y_all.append(y)
+        try:
+            X, y = load_subject_data(s)
+            X_all.append(X)
+            y_all.append(y)
+        except Exception as e:
+            print(f"Skipping subject: {s}: {e}")
 
     X = np.concatenate(X_all, axis=0)
     y = np.concatenate(y_all, axis=0)
