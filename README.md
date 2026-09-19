@@ -1,17 +1,32 @@
 # Decoding EEG-Based Movement Imagery (MI) using a CNN-Transformer
 _by Antonia Reul (2026)_ | Contact: areul@uni-osnabrueck.de
 
-This project attempts to develop a CNN-Transformer, combining scientific techniques which have proven highly useful in research the past couple of years, which can decode movement imagination from EEG data reliably.
+This project attempts to develop a CNN-Transformer, combining scientific techniques which have proven highly useful in research the past couple of years, which can decode movement imagination from EEG data reliably. The original idea of this project was to build on Ma et al. (2022) and Liao et al. (2025), but inspiration from other scientific papers and publications has been drawn as well. Please see the PDF **'decoding_eeg_movement_imagery.pdf'** for a **full report on architectural and parameter choices**. 
 
-Please see the PDF **'decoding_eeg_movement_imagery.pdf'** for a **full report on architectural and parameter choices**. 
+## Installation/Setup
+The MNE library, as well as other medical libraries, are still getting upgraded and unfortunately sometimes still rely on old code. To ensure that the code works, 'requirements.txt' has been added specifying library versions which should be installed to ensure that the code runs.
 
-## Setup
-The MNE library, as well as other medical libraries, are still getting upgraded and unfortunately sometimes still rely on old code. To ensure that the code works, 'requirements.txt' have been added.
+## Repository Structure
+├── notebooks/              # Jupyter notebooks for experimentation, a pipeline overview and dataset descriptions.
+├── results/
+│   └── plots/              # Evaluation metric visualizations.
+├── src/
+│   ├── datamodule.py/      # Create dataloader.
+│   ├── dataset.py/         # Initialize dataset loader (to ensure HPC workflow).
+│   ├── download_data.py/   # Download data from MNE eegbci module.
+│   ├── evaluate.py/        # Evaluation functions and metrics.
+│   ├── model.py/           # Model architecture.
+│   ├── preprocess.py/      # Helper functions and reusable utilities.
+│   └── train.py/           # Training function and execution.
+├── .DS_Store         
+├── .gitignore              # Components which should be ignored while executing main code.
+├── README.md               # This file.
+├── check_mne_path.py       # Used for ensuring paths work correctly.
+├── job.sh                  # Main job submitted to HPC via SLURM
+├── preprocess.sh           # Data preprocessing on head node of HPC
+└── requirements.txt        # Libraries to install
 
-
-_The original idea of this project was to build on Ma et al. (2022) and Liao et al. (2025), but inspiration from other scientific papers and publications has been drawn as well._
-
-### References
+#### References
 * Liao, W., Liu, H. & Wang, W. (2025). Advancing BCI with a transformer-based model for motor imagery classification. Sci Rep 15, 23380. https://doi.org/10.1038/s41598-025-06364-4. - the code is available here: https://github.com/BlackCattt9/EEGEncoder
 * Ma, Y., Song, Y. & Gao, F. (2022). A novel hybrid CNN-Transformer model for EEG Motor Imagery classification. International Joint Conference on Neural Networks (IJCNN), Padua, Italy, 2022, 1-8. https://doi.org/10.1109/IJCNN55064.2022.9892821.
 * Schalk, G. (2009). EEG Motor Movement/Imagery Dataset (version 1.0.0). PhysioNet. RRID:SCR_007345. https://doi.org/10.13026/C28G6P - documentation: https://physionet.org/content/eegmmidb/1.0.0/
