@@ -1,8 +1,8 @@
-import warnings
+import math
 import numpy as np
 import torch
 import torch.nn as nn
-import math
+import warnings
 
 
 """class PoorMLP(nn.Module):
@@ -42,6 +42,13 @@ import math
 # ======================================================
 
 class BaselineCNN(nn.Module):
+    """
+    Baseline model for main model performance comparison
+
+    Parameters:
+    - num_classes: Number of classes
+    """
+    
     def __init__(self, num_classes=1):
         super(BaselineCNN, self).__init__()
 
@@ -51,9 +58,9 @@ class BaselineCNN(nn.Module):
         self.elu = nn.ELU()
 
     def forward(self, x):
-        x = self.elu(self.conv1(x)) # (batch, 16, samples-24)
-        x = self.pool(x).squeeze(-1) # (batch, 16)
-        x = self.fc(x)               # (batch, 2)
+        x = self.elu(self.conv1(x))     # (batch, 16, samples-24)
+        x = self.pool(x).squeeze(-1)    # (batch, 16)
+        x = self.fc(x)                  # (batch, 2)
         return x.squeeze(-1)
 
 
@@ -61,13 +68,11 @@ class BaselineCNN(nn.Module):
 # CNN 
 # ====
 
-"""transformation of continuous time-series values into discrete
-token sequences/localized patches which self-attention mechanisms 
-can then work with"""
-
 class CNN(nn.Module):
     """
-    CNN to capture local relationships before input is passed to transformer
+    CNN to transform the continuous time-series values into discrete
+    token sequences/localized patches and to capture local relationships 
+    before input is passed to the Transformer
 
     Parameters:
     - n_channels: Number of channels, 64 in our dataset
@@ -162,7 +167,7 @@ class PositionalEncoding(nn.Module):
 
 
 # =====================================
-# Different Transformer components
+# Transformer components
 # =====================================
 
 class ResidualConnection(nn.Module):
