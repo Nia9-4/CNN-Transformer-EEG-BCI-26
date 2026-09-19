@@ -7,6 +7,7 @@ This project attempts to develop a CNN-Transformer, combining scientific techniq
 The MNE library, as well as other medical libraries, are still getting upgraded and unfortunately sometimes still rely on old code. To ensure that the code works, 'requirements.txt' has been added specifying library versions which should be installed to ensure that the code runs.
 
 
+## Repository Structure
 
 ```text
 .
@@ -29,25 +30,6 @@ The MNE library, as well as other medical libraries, are still getting upgraded 
 ├── preprocess.sh           # Shell script used for data preprocessing on the cluster's head node.
 └── requirements.txt        # List of all Python libraries and their versions required.
 
-## Repository Structure
-├── notebooks/              # Jupyter notebooks for experimentation, a pipeline overview and dataset descriptions.
-├── results/
-│   └── plots/              # Evaluation metric visualizations.
-├── src/
-│   ├── datamodule.py/      # Create dataloader.
-│   ├── dataset.py/         # Initialize dataset loader (to ensure HPC workflow).
-│   ├── download_data.py/   # Download data from MNE eegbci module.
-│   ├── evaluate.py/        # Evaluation functions and metrics.
-│   ├── model.py/           # Model architecture.
-│   ├── preprocess.py/      # Helper functions and reusable utilities.
-│   └── train.py/           # Training function and execution.
-├── .DS_Store         
-├── .gitignore              # Components which should be ignored while executing main code.
-├── README.md               # This file.
-├── check_mne_path.py       # Used for ensuring paths work correctly.
-├── job.sh                  # Main job submitted to HPC via SLURM
-├── preprocess.sh           # Data preprocessing on head node of HPC
-└── requirements.txt        # Libraries to install
 
 #### References
 * Liao, W., Liu, H. & Wang, W. (2025). Advancing BCI with a transformer-based model for motor imagery classification. Sci Rep 15, 23380. https://doi.org/10.1038/s41598-025-06364-4. - the code is available here: https://github.com/BlackCattt9/EEGEncoder
