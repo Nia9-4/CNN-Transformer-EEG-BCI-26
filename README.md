@@ -6,6 +6,29 @@ This project attempts to develop a CNN-Transformer, combining scientific techniq
 ## Installation/Setup
 The MNE library, as well as other medical libraries, are still getting upgraded and unfortunately sometimes still rely on old code. To ensure that the code works, 'requirements.txt' has been added specifying library versions which should be installed to ensure that the code runs.
 
+
+
+```text
+.
+├── notebooks/              # Jupyter notebooks for experimentation, pipeline overview, and dataset descriptions.
+├── results/
+│   └── plots/              # Visualization of evaluation metrics after training runs.
+├── src/
+│   ├── datamodule.py/      # Defines the DataLoader and data handling pipeline.
+│   ├── dataset.py/         # Initializes the dataset loader (critical for HPC workflow consistency).
+│   ├── download_data.py/   # Script to download data from the MNE EEGBCI module.
+│   ├── evaluate.py/        # Contains evaluation functions and performance metrics.
+│   ├── model.py/           # Defines the neural network architecture.
+│   ├── preprocess.py/      # Helper functions and reusable preprocessing utilities.
+│   └── train.py/           # Main execution script for model training.
+├── .DS_Store               # macOS system file (can be ignored).
+├── .gitignore              # Defines which files (e.g., temporary data, virtual envs) should be ignored by Git.
+├── README.md               # This file: The primary documentation entry point.
+├── check_mne_path.py       # Utility script to verify MNE installation paths on the cluster.
+├── job.sh                  # Main SLURM job script for submitting training jobs to the HPC.
+├── preprocess.sh           # Shell script used for data preprocessing on the cluster's head node.
+└── requirements.txt        # List of all Python libraries and their versions required.
+
 ## Repository Structure
 ├── notebooks/              # Jupyter notebooks for experimentation, a pipeline overview and dataset descriptions.
 ├── results/
