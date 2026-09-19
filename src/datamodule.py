@@ -42,7 +42,6 @@ def create_dataloaders(batch_size):
 
     print(f"Subjects, train: {len(train_subjects)}, val: {len(val_subjects)}, test: {len(test_subjects)}")
 
-    # Some other projects use batch size of 16 with the PhysioNet dataset
     train_loader = DataLoader(Subset(full_dataset, train_subjects), batch_size=batch_size, shuffle=True) 
     val_loader = DataLoader(Subset(full_dataset, val_subjects), batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(Subset(full_dataset, test_subjects), batch_size=batch_size, shuffle=False)
