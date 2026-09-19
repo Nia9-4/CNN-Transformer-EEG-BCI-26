@@ -15,24 +15,27 @@ The MNE library, as well as other medical libraries, are still getting upgraded 
 │   ├── datapreproprocessing.ipynb     # Dataset descriptions and visualizations.
 │   ├── full_pipeline.ipynb            # All .py files in a notebook for an overview and direct test executions.
 │   └── pipeline_test.ipynb            # Jupyter notebook to test all .py files on small dataset size and the pipeline.
+|
 ├── results/
-│   └── plots/              # Visualization of evaluation metrics after training runs.
+│   └── plots/                         # Visualization of evaluation metrics after training runs.
+|
 ├── src/
-│   ├── datamodule.py       # Defines the DataLoader and data handling pipeline.
-│   ├── dataset.py          # Initializes the dataset loader (critical for HPC workflow consistency).
-│   ├── download_data.py    # Script to download data from the MNE EEGBCI module.
-│   ├── evaluate.py         # Contains evaluation functions and performance metrics.
-│   ├── model.py            # Defines the neural network architecture.
-│   ├── preprocess.py       # Helper functions and reusable preprocessing utilities.
-│   └── train.py            # Main execution script for model training.
-├── decoding_mo...pdf       # Main project report with architectural choice justifications.
-├── .DS_Store               # macOS system file (can be ignored).
-├── .gitignore              # Defines which files (e.g., temporary data, virtual envs) should be ignored by Git.
-├── README.md               # This file: The primary documentation entry point.
-├── check_mne_path.py       # Utility script to verify MNE installation paths on the cluster.
-├── job.sh                  # Main SLURM job script for submitting training jobs to the HPC.
-├── preprocess.sh           # Shell script used for data preprocessing on the cluster's head node.
-└── requirements.txt        # List of all Python libraries and their versions required.
+│   ├── datamodule.py                  # Defines the DataLoader and data handling pipeline.
+│   ├── dataset.py                     # Initializes the dataset loader (critical for HPC workflow consistency).
+│   ├── download_data.py               # Script to download data from the MNE EEGBCI module.
+│   ├── evaluate.py                    # Contains evaluation functions and performance metrics.
+│   ├── model.py                       # Defines the neural network architecture.
+│   ├── preprocess.py                  # Helper functions and reusable preprocessing utilities.
+│   └── train.py                       # Main execution script for model training.
+|
+├── decoding_mo...pdf                  # Main project report with architectural choice justifications.
+├── .DS_Store                          # macOS system file (can be ignored).
+├── .gitignore                         # Defines which files (e.g., temporary data, virtual envs) should be ignored by Git.
+├── README.md                          # This file: The primary documentation entry point.
+├── check_mne_path.py                  # Utility script to verify MNE installation paths on the cluster.
+├── job.sh                             # Main SLURM job script for submitting training jobs to the HPC.
+├── preprocess.sh                      # Shell script used for data preprocessing on the cluster's head node.
+└── requirements.txt                   # List of all Python libraries and their versions required.
 ```
 
 #### References
