@@ -9,7 +9,7 @@ def download():
         if s in BAD:
             continue
         try:
-            eegbci.load_data(subject_id=s, runs=runs, update_path=True)
+            eegbci.load_data(subjects=s, runs=runs, update_path=True)
             print(f"Downloaded subject {s}")
         except Exception as e:
             print(f"Failed to download subject {s}: {e}")

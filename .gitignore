@@ -7,3 +7,5 @@ logs/
 .venv/
 __pycache__/
 *.pyc
+miniconda/
+Miniconda3-latest-Linux-x86_64.sh

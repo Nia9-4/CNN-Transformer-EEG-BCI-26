@@ -64,7 +64,7 @@ def get_predictions(model, test_loader, device):
     return np.array(all_targets), np.array(all_preds)
 
 
-def visualize_predictions(y_true, y_pred, model_name="model", save=False):
+def visualize_predictions(y_true, y_pred, model_name="model", learning_rate=None, save=False):
     """Visualize prediction accuracy with confusion matrices"""
 
     unique, counts = np.unique(y_pred, return_counts=True)
@@ -76,20 +76,27 @@ def visualize_predictions(y_true, y_pred, model_name="model", save=False):
 
     cm = confusion_matrix(y_true, y_pred)
 
-    plt.figure(figsize=(5, 4))
+    fig1 = plt.figure(1, figsize=(5, 4))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
                     xticklabels=['Left', 'Right'], yticklabels=['Left', 'Right'])
     plt.xlabel('Predicted')
     plt.ylabel('True')
-    plt.title(f'Confusion Matrix: {model_name}')
+    lr_str = f"lr_{learning_rate:.1e}" 
+    plt.title(f'Confusion Matrix: {model_name}, lr = {learning_rate}')
 
     if save:
         plot_dir = os.path.join(PROJECT_ROOT, 'results', 'plots')
         os.makedirs(plot_dir, exist_ok=True)
-        filename = f"{model_name}_confusion_matrix.png"
+
+        if learning_rate is not None:
+            filename = f"{model_name}_{lr_str}_confusion_matrix.png"
+        else:
+            filename = f"{model_name}_confusion_matrix.png"
+
         save_path = os.path.join(plot_dir, filename)
         plt.savefig(save_path)
         print(f"Confusion matrix saved to: {save_path}")
         plt.close()
+
     else:
         plt.show()

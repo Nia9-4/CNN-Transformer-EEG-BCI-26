@@ -1,8 +1,8 @@
 import numpy as np
 import mne 
 import os
-from mne.io import concatenate_raws, read_raw_edf
 from mne.datasets import eegbci
+from mne.io import concatenate_raws, read_raw_edf
 from mne.preprocessing import ICA
 from typing import Tuple
 
@@ -16,6 +16,7 @@ if os.path.basename(PROJECT_ROOT) == 'src':
 
 print(f"Project Root identified as: {PROJECT_ROOT}")
 
+LOCAL_DATA_ROOT = "/home/student/a/areul/mne_data/MNE-eegbci-data/files/eegmmidb/1.0.0/"
 
 """A plotted analysis of the dataset can be found in a separate
 Jupyter notebook in the folder 'notebooks'
@@ -28,10 +29,25 @@ this code successfully in an environment."""
 # MNE: https://mne.tools/stable/generated/mne.datasets.eegbci.load_data.html
 
 
-def load_subject_data(subject_id, runs=[4, 8, 12], preload=True, baseline=None) -> Tuple[np.ndarray, np.ndarray]:
+def load_subject_data(subject_id: int, runs=[4, 8, 12], preload=True, baseline=None, data_root: str = LOCAL_DATA_ROOT) -> Tuple[np.ndarray, np.ndarray]:
     # Loading the raw data file for a single subject
-    print('Checkpoint 1: Loading EDF files')
-    paths = eegbci.load_data(subject_id, runs=runs, update_path=False)
+    print('Checkpoint 1: Loading EDF files for subject {subject_id}')
+    paths = []
+    for run in runs:
+        subject_folder_name = f"S{subject_id:03d}"
+        filename_inside_folder = f"S{subject_id:03d}R{run:02d}.edf"
+        full_file_path = os.path.join(data_root, subject_folder_name, filename_inside_folder)
+        
+        if os.path.exists(full_file_path):
+            paths.append(full_file_path)
+        else:
+            print(f"ERROR: Could not find expected file for subject {subject_id}, run {run} at: {full_file_path}")
+            return None, None
+
+    if not paths:
+        print(f"CRITICAL ERROR: No EDF files were successfully located for subject {subject_id}.")
+        return None, None
+
     raw = concatenate_raws([read_raw_edf(p, preload=True) for p in paths])
 
     print('Checkpoint 2: Annotations and Montage')
@@ -122,13 +138,17 @@ def run_preprocessing():
         except Exception as e:
             print(f"Skipping subject: {s}: {e}")
 
-    X = np.concatenate(X_all, axis=0)
-    y = np.concatenate(y_all, axis=0)
+    if X_all and y_all:
+        X = np.concatenate(X_all, axis=0)
+        y = np.concatenate(y_all, axis=0)
 
-    np.save(os.path.join(processed_dir, 'eeg_X_processed.npy'), X)
-    np.save(os.path.join(processed_dir, 'eeg_y_processed.npy'), y)
+        np.save(os.path.join(processed_dir, 'eeg_X_processed.npy'), X)
+        np.save(os.path.join(processed_dir, 'eeg_y_processed.npy'), y)
 
-    print(f"Finished! 'eeg_X_processed.npy' and 'eeg_y_processed.npy' saved to {processed_dir}")
+        print(f"Finished! 'eeg_X_processed.npy' and 'eeg_y_processed.npy' saved to {processed_dir}")
+
+    else:
+        print("CRITICAL FAILURE: No subjects were successfully processed. Please verify the file paths and naming conventions against the actual data structure.")
 
 if __name__ == "__main__":
     run_preprocessing()

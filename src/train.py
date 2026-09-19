@@ -39,7 +39,7 @@ def train(model, n_epochs, train_loader, val_loader, optimizer, device, model_na
     current_lr = optimizer.param_groups[0]['lr']
     current_bs = train_loader.batch_size
 
-    run_name = f"model_name_lr{current_lr}_bs{current_bs}"
+    run_name = f"{model_name}_lr{current_lr}_bs{current_bs}"
 
     # Path setup
     model_dir = os.path.join(PROJECT_ROOT, 'results', 'models')
@@ -139,7 +139,7 @@ def train(model, n_epochs, train_loader, val_loader, optimizer, device, model_na
 # Function to plot metrics
 # =========================
 
-def plot_metrics(history, model_name="model", save=False):
+def plot_metrics(history, model_name="model", learning_rate=None, save=False):
 
     epochs = range(1, len(history['train_loss']) + 1)
 
@@ -164,7 +164,13 @@ def plot_metrics(history, model_name="model", save=False):
     if save:
         plot_dir = os.path.join(PROJECT_ROOT, 'results', 'plots')
         os.makedirs(plot_dir, exist_ok=True)
-        filename = f"{model_name}_loss_curve.png"
+
+        if learning_rate is not None:
+            lr_str = f"lr_{learning_rate:.1e}"
+            filename = f"{model_name}_dropout.4_{lr_str}_loss_curve.png"
+        else:
+            filename = f"{model_name}_dropout.4_loss_curve.png"
+        
         save_path = os.path.join(plot_dir, filename)
         plt.savefig(save_path)
         print(f"Plot saved to: {save_path}")
@@ -216,11 +222,11 @@ if __name__ == "__main__":
                 device=device,
                 model_name="baseline_cnn")
 
-            plot_metrics(baseline_history, model_name="baseline_cnn", save=True)
-            plot_metrics(main_history, model_name="main", save=True)
+            plot_metrics(baseline_history, model_name="baseline_cnn", learning_rate=lr, save=True)
+            plot_metrics(main_history, model_name="main", learning_rate=lr, save=True)
 
             y_true_baseline, y_pred_baseline = get_predictions(trained_baseline, test_loader, device)
-            visualize_predictions(y_true_baseline, y_pred_baseline, model_name="baseline_cnn", save=True)
+            visualize_predictions(y_true_baseline, y_pred_baseline, model_name="baseline_cnn", learning_rate=lr, save=True)
 
             y_true_main, y_pred_main = get_predictions(trained_main, test_loader, device)
-            visualize_predictions(y_true_main, y_pred_main, model_name="main", save=True)
+            visualize_predictions(y_true_main, y_pred_main, model_name="main", learning_rate=lr, save=True)

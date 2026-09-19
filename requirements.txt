@@ -4,3 +4,4 @@ mne
 matplotlib
 scikit-learn
 torch
+seaborn
