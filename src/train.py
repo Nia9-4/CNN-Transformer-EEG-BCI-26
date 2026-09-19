@@ -1,15 +1,17 @@
-import numpy as np
 import matplotlib.pyplot as plt
-import torch
+import numpy as np
 import os
+import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import CosineAnnealingLR, LambdaLR
 
-from model import BaselineCNN, EEGClassifier
 from datamodule import create_dataloaders
 from evaluate import evaluate, get_predictions, visualize_predictions
+from model import BaselineCNN, EEGClassifier
 
+
+# Seeds to ensure reproducibility
 seed = 42
 torch.manual_seed(seed)
 np.random.seed(seed)
@@ -203,7 +205,7 @@ if __name__ == "__main__":
             optimizer_main = optim.Adam(model_main.parameters(), lr=lr, weight_decay=1e-4)
             optimizer_baseline = optim.Adam(model_baseline.parameters(), lr=lr, weight_decay=1e-4)
 
-            # Training loop for models
+            # Training baseline and main model
             trained_main, main_history = train(
                 model=model_main, 
                 n_epochs=50, 
@@ -222,6 +224,7 @@ if __name__ == "__main__":
                 device=device,
                 model_name="baseline_cnn")
 
+            # Evaluating both models
             plot_metrics(baseline_history, model_name="baseline_cnn", learning_rate=lr, save=True)
             plot_metrics(main_history, model_name="main", learning_rate=lr, save=True)
 
