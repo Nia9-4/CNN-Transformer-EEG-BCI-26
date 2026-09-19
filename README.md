@@ -22,6 +22,7 @@ The MNE library, as well as other medical libraries, are still getting upgraded 
 │   ├── model.py/           # Defines the neural network architecture.
 │   ├── preprocess.py/      # Helper functions and reusable preprocessing utilities.
 │   └── train.py/           # Main execution script for model training.
+├── decoding_mo...pdf       # Main project report with architectural choice justifications.
 ├── .DS_Store               # macOS system file (can be ignored).
 ├── .gitignore              # Defines which files (e.g., temporary data, virtual envs) should be ignored by Git.
 ├── README.md               # This file: The primary documentation entry point.
