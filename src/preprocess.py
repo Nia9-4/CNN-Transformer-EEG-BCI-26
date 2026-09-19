@@ -1,5 +1,5 @@
+import mne
 import numpy as np
-import mne 
 import os
 from mne.datasets import eegbci
 from mne.io import concatenate_raws, read_raw_edf
@@ -16,20 +16,19 @@ if os.path.basename(PROJECT_ROOT) == 'src':
 
 print(f"Project Root identified as: {PROJECT_ROOT}")
 
+# HPC configuration - change this to accomodate your conventions
 LOCAL_DATA_ROOT = "/home/student/a/areul/mne_data/MNE-eegbci-data/files/eegmmidb/1.0.0/"
 
-"""A plotted analysis of the dataset can be found in a separate
-Jupyter notebook in the folder 'notebooks'
 
-Due to the MNE library still depending on some NumPy1. functions but newer
-scipy commands, numpy=1.26.4 and scipy=1.12.0 are suggested for running 
-this code successfully in an environment."""
+"""A plotted analysis of the dataset can be found in a separate
+Jupyter notebook in the folder 'notebooks'."""
 
 # Dataset documentation: https://www.physionet.org/content/eegmmidb/1.0.0/
 # MNE: https://mne.tools/stable/generated/mne.datasets.eegbci.load_data.html
 
 
-def load_subject_data(subject_id: int, runs=[4, 8, 12], preload=True, baseline=None, data_root: str = LOCAL_DATA_ROOT) -> Tuple[np.ndarray, np.ndarray]:
+def load_subject_data(subject_id: int, runs=[4, 8, 12], preload=True, 
+                      baseline=None, data_root: str = LOCAL_DATA_ROOT) -> Tuple[np.ndarray, np.ndarray]:
     # Loading the raw data file for a single subject
     print('Checkpoint 1: Loading EDF files for subject {subject_id}')
     paths = []
@@ -148,7 +147,8 @@ def run_preprocessing():
         print(f"Finished! 'eeg_X_processed.npy' and 'eeg_y_processed.npy' saved to {processed_dir}")
 
     else:
-        print("CRITICAL FAILURE: No subjects were successfully processed. Please verify the file paths and naming conventions against the actual data structure.")
+        print('CRITICAL FAILURE: No subjects were successfully processed.' 
+        'Please verify the file paths and naming conventions against the actual data structure.')
 
 if __name__ == "__main__":
     run_preprocessing()
