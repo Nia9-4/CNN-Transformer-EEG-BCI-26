@@ -1,5 +1,5 @@
+import mne
 import numpy as np
-import mne 
 import torch
 from torch.utils.data import Dataset
 
