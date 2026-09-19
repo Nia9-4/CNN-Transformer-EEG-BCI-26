@@ -29,7 +29,7 @@ The MNE library, as well as other medical libraries, are still getting upgraded 
 ├── job.sh                  # Main SLURM job script for submitting training jobs to the HPC.
 ├── preprocess.sh           # Shell script used for data preprocessing on the cluster's head node.
 └── requirements.txt        # List of all Python libraries and their versions required.
-
+```
 
 #### References
 * Liao, W., Liu, H. & Wang, W. (2025). Advancing BCI with a transformer-based model for motor imagery classification. Sci Rep 15, 23380. https://doi.org/10.1038/s41598-025-06364-4. - the code is available here: https://github.com/BlackCattt9/EEGEncoder
