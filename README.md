@@ -3,6 +3,8 @@ _by Antonia Reul (2026)_ | Contact: areul@uni-osnabrueck.de
 
 This project attempts to develop a CNN-Transformer, combining scientific techniques which have proven highly useful in research the past couple of years, which can decode movement imagination from EEG data reliably. The original idea of this project was to build on Ma et al. (2022) and Liao et al. (2025), but inspiration from other scientific papers and publications has been drawn as well. Please see the PDF ['decoding_eeg_movement_imagery.pdf'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/decoding_movement_imagery_pdf.pdf) for a **full report on architectural and parameter choices**. 
 
+<img src="https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/eeg_signals.png" alt="EEG Signals" width="900"/>
+
 ## Installation/Setup
 The MNE library, as well as other medical libraries, are still getting upgraded and unfortunately sometimes still rely on old code. To ensure that the code works, ['requirements.txt'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/requirements.txt) has been added specifying library versions which should be installed to ensure that the code runs.
 
@@ -41,8 +43,6 @@ The MNE library, as well as other medical libraries, are still getting upgraded 
 
 ## EEG Motor Movement / Imagery Dataset
 From the prominent 64-channel EEG motor movement / imagery dataset by Schalk (2009), the experimental runs 4, 8, and 12 (imagination of left/right fist opening/closing) of N=105 subjects have been selected for training the network on binary classification. A detailed description of the dataset can not only be found in the [PDF report of this project](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/decoding_movement_imagery_pdf.pdf), but also the notebook ['datapreprocessing.ipynb'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/datapreprocessing.ipynb), as well as the [physionet website](https://physionet.org/content/eegmmidb/1.0.0/) and [MNE website](https://mne.tools/stable/index.html), which is an open-source Python package for human neurophysiological data analysis.
-
-<img src="https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/eeg_signals.png" alt="EEG Signals" width="900"/>
 
 
 ## Main Model: CNN-Transformer
