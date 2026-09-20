@@ -5,7 +5,7 @@ This project attempts to develop a CNN-Transformer, combining scientific techniq
 
 <img src="https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/eeg_signals.png" alt="EEG Signals" width="900"/>
 
-_Please note that this is a student project which is far away from perfect and is therefore still under construction. I am always open for feedback and model improvement suggestions. The next step will most likely be to use data augmentation to prevent model overfitting, as can be seen for the current model._
+_Please note that this is a student project which is far away from perfect and is therefore still under construction. I am always open for feedback and model improvement suggestions. The next step will most likely be to use data augmentation to prevent model overfitting, as can be seen in the current model._
 
 ## Installation/Setup
 The MNE library, as well as other medical libraries, are still getting upgraded and, unfortunately, sometimes still rely on old code. For a smooth code execution please ensure the specific module versions, as specified in ['requirements.txt'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/requirements.txt), are installed (the MNE library, for instance, requires Numpy1 for some functions).
