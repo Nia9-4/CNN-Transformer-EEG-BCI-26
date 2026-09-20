@@ -1,7 +1,7 @@
 # Decoding EEG-Based Movement Imagery (MI) using a CNN-Transformer
 _by Antonia Reul (2026)_ | Contact: areul@uni-osnabrueck.de
 
-This project attempts to develop a CNN-Transformer, combining scientific techniques which have proven highly useful in research the past couple of years, to decode movement imagination from EEG data. The original idea of this project was to build on Ma et al. (2022) and Liao et al. (2025), but inspiration from other scientific papers and publications has been drawn as well. For a **full report on architectural and parameter choices**, please see the PDF ['decoding_eeg_movement_imagery.pdf'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/decoding_movement_imagery_pdf.pdf). 
+This project attempts to develop a CNN-Transformer, combining scientific techniques which have proven highly useful in research the past couple of years, to decode movement imagination from EEG data. The original idea of this project was to build on Ma et al. (2022) and Liao et al. (2025), but inspiration from other scientific papers and publications has been drawn as well. For a **full report on architectural and parameter choices**, please see the PDF ['decoding_eeg_movement_imagery.pdf'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/decoding_movement_imagery.pdf). 
 
 <img src="https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/eeg_signals.png" alt="EEG Signals" width="900"/>
 
@@ -44,17 +44,17 @@ The MNE library, as well as other medical libraries, are still getting upgraded 
 
 
 ## EEG Motor Movement / Imagery Dataset
-From the prominent 64-channel EEG motor movement / imagery dataset by Schalk (2009), the experimental runs 4, 8, and 12 (imagination of left/right fist opening/closing) of N = 105 subjects have been selected for training the network on binary classification. A detailed description of the dataset can not only be found in the [PDF project report](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/decoding_movement_imagery_pdf.pdf), but also the notebook ['datapreprocessing.ipynb'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/datapreprocessing.ipynb), as well as the [physionet website](https://physionet.org/content/eegmmidb/1.0.0/) and [MNE website](https://mne.tools/stable/index.html), which is an open-source Python package for human neurophysiological data analysis.
+From the prominent 64-channel EEG motor movement / imagery dataset by Schalk (2009), the experimental runs 4, 8, and 12 (imagination of left/right fist opening/closing) of N = 105 subjects have been selected for training the network on binary classification. A detailed description of the dataset can not only be found in the [PDF project report](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/decoding_movement_imagery.pdf), but also the notebook ['datapreprocessing.ipynb'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/datapreprocessing.ipynb), as well as the [physionet website](https://physionet.org/content/eegmmidb/1.0.0/) and [MNE website](https://mne.tools/stable/index.html), which is an open-source Python package for human neurophysiological data analysis.
 
 
 ## Main Model: CNN-Transformer
-The hybrid architecture comprises of a CNN, Transformer and MLP Classifier. For baseline comparisons, a simple CNN has been used. The codebook ['full_pipeline.ipynb'](https://github.com/Ni9-4/CNN-Transformer-EEG-BCI-26/full_pipeline.ipynb) pools the main .py files, was developed to test the pipeline all in one place, and display plots directly, so that interested readers can understand and work with the code easily. Detailed architectural structure and choices are further described in the [PDF report of this project](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/decoding_movement_imagery_pdf.pdf).
+The hybrid architecture comprises of a CNN, Transformer and MLP Classifier. For baseline comparisons, a simple CNN has been used. The codebook ['full_pipeline.ipynb'](https://github.com/Ni9-4/CNN-Transformer-EEG-BCI-26/full_pipeline.ipynb) pools the main .py files, was developed to test the pipeline all in one place, and display plots directly, so that interested readers can understand and work with the code easily. Detailed architectural structure and choices are further described in the [PDF report of this project](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/decoding_movement_imagery.pdf).
 
 <img src="https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/architecture.png" alt="Main Model Architecture" width="300"/>
 
 
 ## Main References
-The full list of references for this project can be found in the PDF project report ['decoding_eeg_movement_imagery.pdf'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/decoding_movement_imagery_pdf.pdf). However, these references are especially important since they served as main inspiration for this project, and the last one is the dataset reference:
+The full list of references for this project can be found in the PDF project report ['decoding_eeg_movement_imagery.pdf'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/decoding_movement_imagery.pdf). However, these references are especially important since they served as main inspiration for this project, and the last one is the dataset reference:
 
 * Liao, W., Liu, H. & Wang, W. (2025). Advancing BCI with a transformer-based model for motor imagery classification. Sci Rep 15, 23380. https://doi.org/10.1038/s41598-025-06364-4. - the code is available here: https://github.com/BlackCattt9/EEGEncoder
 * Ma, Y., Song, Y. & Gao, F. (2022). A novel hybrid CNN-Transformer model for EEG Motor Imagery classification. International Joint Conference on Neural Networks (IJCNN), Padua, Italy, 2022, 1-8. https://doi.org/10.1109/IJCNN55064.2022.9892821.
