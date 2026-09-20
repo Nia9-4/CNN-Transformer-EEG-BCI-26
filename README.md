@@ -3,9 +3,9 @@ _by Antonia Reul (2026)_ | Contact: areul@uni-osnabrueck.de
 
 This project attempts to develop a CNN-Transformer, combining scientific techniques which have proven highly useful in research the past couple of years, to decode movement imagination from EEG data. The original idea of this project was to build on Ma et al. (2022) and Liao et al. (2025), but inspiration from other scientific papers and publications has been drawn as well. For a **full report on architectural and parameter choices**, please see the PDF ['decoding_eeg_movement_imagery.pdf'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/decoding_movement_imagery_pdf.pdf). 
 
-_Please note that this is a student project which is far away from perfect and is therefore still under construction. I am always open for feedback and model improvement suggestions. The next step will most likely be to use data augmentation to prevent model overfitting, as can be seen for the current model._
-
 <img src="https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/eeg_signals.png" alt="EEG Signals" width="900"/>
+
+_Please note that this is a student project which is far away from perfect and is therefore still under construction. I am always open for feedback and model improvement suggestions. The next step will most likely be to use data augmentation to prevent model overfitting, as can be seen for the current model._
 
 ## Installation/Setup
 The MNE library, as well as other medical libraries, are still getting upgraded and, unfortunately, sometimes still rely on old code. For a smooth code execution please ensure the specific module versions, as specified in ['requirements.txt'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/requirements.txt), are installed (the MNE library, for instance, requires Numpy1 for some functions).
