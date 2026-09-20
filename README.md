@@ -49,7 +49,7 @@ From the prominent 64-channel EEG motor movement / imagery dataset by Schalk (20
 The hybrid architecture comprises of a CNN, Transformer and MLP Classifier. This codebook ['full_pipeline.ipynb'](https://github.com/Ni9-4/CNN-Transformer-EEG-BCI-26/full_pipeline.ipynb) combines the five main .py files, was developed to test the pipeline all in one place, and display plots directly, so that interested readers can understand and work with the code easily.
 Detailed architectural structure and choices are further described in the [PDF report of this project](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/decoding_movement_imagery_pdf.pdf).
 
-<img src="https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/architecture.png" alt="Main Model Architecture" width="100"/>
+<img src="https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/architecture.png" alt="Main Model Architecture" width="300"/>
 
 
 ## Main References
