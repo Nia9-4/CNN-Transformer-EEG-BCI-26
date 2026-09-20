@@ -42,7 +42,7 @@ The MNE library, as well as other medical libraries, are still getting upgraded 
 ## EEG Motor Movement / Imagery Dataset
 From the prominent 64-channel EEG motor movement / imagery dataset by Schalk (2009), the experimental runs 4, 8, and 12 (imagination of left/right fist opening/closing) of N=105 subjects have been selected for training the network on binary classification. A detailed description of the dataset can not only be found in the [PDF report of this project](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/decoding_movement_imagery_pdf.pdf), but also the notebook ['datapreprocessing.ipynb'](https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/datapreprocessing.ipynb), as well as the [physionet website](https://physionet.org/content/eegmmidb/1.0.0/) and [MNE website](https://mne.tools/stable/index.html), which is an open-source Python package for human neurophysiological data analysis.
 
-<img src="https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/eeg_signals.png" alt="EEG Signals" width="300"/>
+<img src="https://github.com/Nia9-4/CNN-Transformer-EEG-BCI-26/blob/New-Features/eeg_signals.png" alt="EEG Signals" width="300"/>
 
 
 ## Main Model: CNN-Transformer
